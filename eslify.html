@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESLify — AI Tools for ESL Teachers</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@500;600;700;800&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --bg:#F4F3EF;
+  --surface:#FFFFFF;
+  --ink:#18181B;
+  --ink-2:#52525B;
+  --ink-3:#A1A1AA;
+  --accent:#2563EB;
+  --accent-bg:#EFF6FF;
+  --accent-border:#BFDBFE;
+  --green:#16A34A;
+  --green-bg:#F0FDF4;
+  --green-border:#BBF7D0;
+  --amber:#D97706;
+  --amber-bg:#FFFBEB;
+  --amber-border:#FDE68A;
+  --red:#DC2626;
+  --red-bg:#FEF2F2;
+  --border:#E4E4E7;
+  --border-2:#D4D4D8;
+  --radius:8px;
+  --radius-lg:14px;
+  --radius-xl:20px;
+}
+
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.6;}
+
+/* NAV */
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-0.5px;display:flex;align-items:center;gap:6px;}
+.logo-badge{font-size:10px;font-weight:600;background:var(--accent);color:white;padding:2px 7px;border-radius:20px;letter-spacing:0.04em;font-family:'Inter',sans-serif;}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.credits-pill{font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);cursor:default;}
+.credits-pill.low{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border);}
+.credits-pill.empty{background:var(--red-bg);color:var(--red);border-color:#FECACA;}
+.btn-nav{font-size:13px;font-weight:500;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border-2);background:transparent;color:var(--ink);cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.btn-nav:hover{background:var(--bg);}
+.btn-pro{background:var(--ink);color:white;border-color:var(--ink);}
+.btn-pro:hover{background:#3F3F46;border-color:#3F3F46;}
+
+/* PAGES */
+.page{display:none;}
+.page.active{display:block;}
+
+/* DASHBOARD */
+.dash-hero{padding:3rem 1.5rem 2rem;max-width:960px;margin:0 auto;text-align:center;}
+.dash-eyebrow{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+.dash-hero h1{font-family:'Syne',sans-serif;font-size:clamp(28px,5vw,44px);font-weight:800;letter-spacing:-1.5px;line-height:1.1;color:var(--ink);margin-bottom:12px;}
+.dash-hero p{color:var(--ink-2);font-size:15px;max-width:480px;margin:0 auto;}
+
+.tools-grid{max-width:960px;margin:0 auto;padding:0 1.5rem 4rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+
+.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;}
+.tool-card:hover{border-color:var(--border-2);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,0.06);}
+.tool-card.active-tool{border-color:var(--accent-border);background:var(--accent-bg);}
+.tool-card.coming{opacity:0.55;cursor:default;}
+.tool-card.coming:hover{transform:none;box-shadow:none;border-color:var(--border);}
+
+.tool-icon{width:40px;height:40px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px;}
+.tool-card.active-tool .tool-icon{background:white;}
+
+.tool-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px;letter-spacing:-0.3px;}
+.tool-desc{font-size:12.5px;color:var(--ink-2);line-height:1.5;}
+.coming-badge{position:absolute;top:14px;right:14px;font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;background:var(--bg);color:var(--ink-3);border:1px solid var(--border);padding:2px 8px;border-radius:20px;}
+.new-badge{position:absolute;top:14px;right:14px;font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);padding:2px 8px;border-radius:20px;}
+
+/* TOOL PAGE */
+.tool-page{max-width:1080px;margin:0 auto;padding:1.5rem;display:grid;grid-template-columns:340px 1fr;gap:1.5rem;align-items:start;}
+@media(max-width:780px){.tool-page{grid-template-columns:1fr;}}
+
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2);cursor:pointer;padding:0.75rem 1.5rem;border:none;background:none;font-family:inherit;transition:color 0.15s;}
+.back-btn:hover{color:var(--ink);}
+
+/* FORM */
+.form-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;position:sticky;top:72px;}
+.form-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:-0.3px;margin-bottom:1.25rem;color:var(--ink);}
+.field{margin-bottom:1rem;}
+label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:5px;letter-spacing:0.02em;}
+select,input[type="text"],textarea{width:100%;padding:8px 11px;border:1px solid var(--border-2);border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);background:var(--surface);appearance:none;outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+select:focus,input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%2352525B' d='M5 6L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;cursor:pointer;}
+textarea{min-height:70px;resize:vertical;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+.tag-row{display:flex;flex-wrap:wrap;gap:5px;}
+.tag{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;border:1px solid var(--border-2);background:transparent;cursor:pointer;color:var(--ink-2);font-family:inherit;transition:all 0.12s;}
+.tag:hover{border-color:var(--accent);color:var(--accent);}
+.tag.on{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent);}
+
+.btn-main{width:100%;padding:10px;background:var(--ink);color:white;border:none;border-radius:var(--radius);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:0.75rem;transition:opacity 0.15s,transform 0.1s;letter-spacing:-0.2px;}
+.btn-main:hover{opacity:0.85;}
+.btn-main:active{transform:scale(0.99);}
+.btn-main:disabled{opacity:0.4;cursor:not-allowed;}
+
+.credit-warning{margin-top:10px;padding:10px 12px;background:var(--red-bg);border:1px solid #FECACA;border-radius:var(--radius);font-size:12px;color:var(--red);display:none;line-height:1.5;}
+.credit-warning a{color:var(--red);font-weight:600;cursor:pointer;}
+
+/* OUTPUT */
+.output-wrap{min-height:400px;}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;text-align:center;color:var(--ink-3);gap:12px;}
+.empty-icon{font-size:36px;}
+.empty p{font-size:13px;max-width:220px;line-height:1.5;}
+
+.loader{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:400px;gap:12px;color:var(--ink-2);font-size:13px;}
+.spin{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);display:none;overflow:hidden;}
+.result-header{padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+.result-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-0.5px;color:var(--ink);margin-bottom:8px;}
+.pill-row{display:flex;flex-wrap:wrap;gap:5px;}
+.pill{font-size:10px;font-weight:600;letter-spacing:0.05em;padding:2px 9px;border-radius:20px;text-transform:uppercase;}
+.pill-blue{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);}
+.pill-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
+.pill-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
+.result-actions{display:flex;gap:6px;flex-shrink:0;}
+.btn-sm{padding:6px 12px;border:1px solid var(--border-2);border-radius:var(--radius);background:transparent;color:var(--ink-2);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.btn-sm:hover{background:var(--bg);color:var(--ink);}
+.result-body{padding:1.5rem;}
+.section{margin-bottom:1.5rem;}
+.section-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--accent-bg);}
+.section-content{font-size:13.5px;line-height:1.75;color:var(--ink);white-space:pre-wrap;}
+
+/* CHECKER */
+.checker{margin-top:14px;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;display:none;}
+.checker-head{padding:12px 1.25rem;background:var(--amber-bg);border-bottom:1px solid var(--amber-border);display:flex;align-items:center;justify-content:space-between;}
+.checker-head h3{font-size:13px;font-weight:600;color:var(--amber);}
+.btn-check{padding:5px 14px;background:var(--amber);color:white;border:none;border-radius:var(--radius);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:opacity 0.15s;}
+.btn-check:hover{opacity:0.85;}
+.btn-check:disabled{opacity:0.5;cursor:not-allowed;}
+.checker-body{padding:1.25rem;display:none;}
+.scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:1.25rem;}
+.score-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px;text-align:center;}
+.score-n{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;line-height:1;color:var(--ink);}
+.score-n.good{color:var(--green);}
+.score-n.mid{color:var(--amber);}
+.score-n.bad{color:var(--red);}
+.score-l{font-size:10px;color:var(--ink-3);margin-top:3px;font-weight:500;}
+.fb-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.5;color:var(--ink);}
+.fb-item:last-child{border-bottom:none;}
+.fb-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;margin-top:2px;font-weight:700;}
+.fb-dot.ok{background:var(--green-bg);color:var(--green);}
+.fb-dot.warn{background:var(--amber-bg);color:var(--amber);}
+.fb-dot.tip{background:var(--accent-bg);color:var(--accent);}
+
+/* UPGRADE MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--radius-xl);padding:2rem;max-width:420px;width:92%;text-align:center;}
+.modal-emoji{font-size:36px;margin-bottom:12px;}
+.modal h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px;}
+.modal>p{color:var(--ink-2);font-size:13.5px;margin-bottom:1.5rem;}
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem;text-align:left;}
+.plan{border:1px solid var(--border-2);border-radius:var(--radius-lg);padding:1rem;}
+.plan.featured{border-color:var(--accent);background:var(--accent-bg);}
+.plan-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:4px;}
+.plan-price{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--accent);}
+.plan-price span{font-size:11px;color:var(--ink-3);font-family:'Inter',sans-serif;font-weight:400;}
+.plan-note{font-size:10px;color:var(--green);font-weight:600;margin-top:2px;}
+.plan-feats{font-size:11px;color:var(--ink-2);margin-top:8px;line-height:1.7;}
+.btn-upgrade-big{width:100%;padding:11px;background:var(--ink);color:white;border:none;border-radius:var(--radius);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;transition:opacity 0.15s;}
+.btn-upgrade-big:hover{opacity:0.85;}
+.modal-close{font-size:12px;color:var(--ink-3);cursor:pointer;background:none;border:none;font-family:inherit;text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">ESLify <span class="logo-badge">BETA</span></div>
+  <div class="nav-right">
+    <div class="credits-pill" id="creditsPill">5 credits left</div>
+    <button class="btn-nav" onclick="showPage('dash')">Tools</button>
+    <button class="btn-nav btn-pro" onclick="showUpgrade()">Upgrade →</button>
+  </div>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dash">
+  <div class="dash-hero">
+    <p class="dash-eyebrow">AI Tools for ESL Teachers</p>
+    <h1>Your ESL teaching toolkit</h1>
+    <p>Purpose-built AI tools for ESL teachers. No generic nonsense — every tool is built around how you actually teach.</p>
+  </div>
+  <div class="tools-grid">
+    <div class="tool-card active-tool" onclick="showPage('lesson')">
+      <div class="tool-icon">📋</div>
+      <div class="tool-name">Lesson Planner</div>
+      <div class="tool-desc">Generate structured, CEFR-aligned lesson plans in seconds. Warm-up to wrap-up, fully ready to teach.</div>
+    </div>
+    <div class="tool-card" onclick="showPage('worksheet')">
+      <div class="new-badge">New</div>
+      <div class="tool-icon">📄</div>
+      <div class="tool-name">Worksheet Generator</div>
+      <div class="tool-desc">Create printable student worksheets with exercises, gap fills, discussion questions and more.</div>
+    </div>
+    <div class="tool-card coming">
+      <div class="coming-badge">Soon</div>
+      <div class="tool-icon">📚</div>
+      <div class="tool-name">Vocabulary Builder</div>
+      <div class="tool-desc">Generate level-appropriate word lists with definitions, collocations and example sentences.</div>
+    </div>
+    <div class="tool-card coming">
+      <div class="coming-badge">Soon</div>
+      <div class="tool-icon">✍️</div>
+      <div class="tool-name">Error Corrector</div>
+      <div class="tool-desc">Paste student writing and get annotated corrections with clear teacher explanations.</div>
+    </div>
+    <div class="tool-card coming">
+      <div class="coming-badge">Soon</div>
+      <div class="tool-icon">🎓</div>
+      <div class="tool-name">Exam Prep Builder</div>
+      <div class="tool-desc">Generate IELTS and TOEFL style tasks, mock questions and practice materials.</div>
+    </div>
+    <div class="tool-card coming">
+      <div class="coming-badge">Soon</div>
+      <div class="tool-icon">📅</div>
+      <div class="tool-name">Syllabus Planner</div>
+      <div class="tool-desc">Plan full courses across weeks. Set goals, sequence topics and track coverage.</div>
+    </div>
+    <div class="tool-card coming">
+      <div class="coming-badge">Soon</div>
+      <div class="tool-icon">📝</div>
+      <div class="tool-name">Progress Reports</div>
+      <div class="tool-desc">Turn your notes into professional student progress reports for parents and schools.</div>
+    </div>
+  </div>
+</div>
+
+<!-- LESSON PLANNER -->
+<div class="page" id="page-lesson">
+  <button class="back-btn" onclick="showPage('dash')">← Back to tools</button>
+  <div class="tool-page">
+    <aside class="form-panel">
+      <div class="form-title">📋 Lesson Planner</div>
+      <div class="field">
+        <label>Student level</label>
+        <select id="l-level">
+          <option>A1 — Beginner</option>
+          <option>A2 — Elementary</option>
+          <option selected>B1 — Intermediate</option>
+          <option>B2 — Upper Intermediate</option>
+          <option>C1 — Advanced</option>
+          <option>C2 — Proficiency</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Lesson type</label>
+        <div class="tag-row" id="l-types">
+          <button class="tag on" data-v="Speaking & conversation">Speaking</button>
+          <button class="tag" data-v="Reading comprehension">Reading</button>
+          <button class="tag" data-v="Grammar focus">Grammar</button>
+          <button class="tag" data-v="Writing skills">Writing</button>
+          <button class="tag" data-v="Listening">Listening</button>
+          <button class="tag" data-v="Vocabulary building">Vocabulary</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Topic or theme</label>
+        <input type="text" id="l-topic" placeholder="e.g. job interviews, travel, climate…">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Duration</label>
+          <select id="l-dur">
+            <option>30 minutes</option>
+            <option selected>45 minutes</option>
+            <option>60 minutes</option>
+            <option>90 minutes</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Class size</label>
+          <select id="l-size">
+            <option>1-to-1</option>
+            <option selected>Small group</option>
+            <option>Class (9–20)</option>
+            <option>Large class</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Specific goals (optional)</label>
+        <textarea id="l-goals" placeholder="e.g. practise past perfect, airport vocabulary…"></textarea>
+      </div>
+      <button class="btn-main" id="l-btn" onclick="runLesson()">Generate lesson plan</button>
+      <div class="credit-warning" id="l-warn">You've used all 5 free credits. <a onclick="showUpgrade()">Upgrade to Pro</a> for unlimited generations.</div>
+    </aside>
+    <section class="output-wrap">
+      <div class="empty" id="l-empty"><div class="empty-icon">📋</div><p>Fill in the settings and generate your lesson plan.</p></div>
+      <div class="loader" id="l-loader"><div class="spin"></div><span id="l-msg">Writing your lesson plan…</span></div>
+      <div class="result-card" id="l-result">
+        <div class="result-header">
+          <div>
+            <div class="result-title" id="l-title"></div>
+            <div class="pill-row" id="l-pills"></div>
+          </div>
+          <div class="result-actions">
+            <button class="btn-sm" onclick="window.print()">Print</button>
+            <button class="btn-sm" id="l-copy" onclick="copyText('lesson')">Copy</button>
+          </div>
+        </div>
+        <div class="result-body" id="l-body"></div>
+      </div>
+      <div class="checker" id="l-checker">
+        <div class="checker-head">
+          <h3>✦ Quality checker</h3>
+          <button class="btn-check" id="l-check-btn" onclick="runCheck()">Check this lesson</button>
+        </div>
+        <div class="checker-body" id="l-check-body"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- WORKSHEET GENERATOR -->
+<div class="page" id="page-worksheet">
+  <button class="back-btn" onclick="showPage('dash')">← Back to tools</button>
+  <div class="tool-page">
+    <aside class="form-panel">
+      <div class="form-title">📄 Worksheet Generator</div>
+      <div class="field">
+        <label>Student level</label>
+        <select id="w-level">
+          <option>A1 — Beginner</option>
+          <option>A2 — Elementary</option>
+          <option selected>B1 — Intermediate</option>
+          <option>B2 — Upper Intermediate</option>
+          <option>C1 — Advanced</option>
+          <option>C2 — Proficiency</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Worksheet focus</label>
+        <div class="tag-row" id="w-types">
+          <button class="tag on" data-v="Mixed exercises">Mixed</button>
+          <button class="tag" data-v="Gap fill exercises">Gap fill</button>
+          <button class="tag" data-v="Reading passage with questions">Reading</button>
+          <button class="tag" data-v="Grammar practice">Grammar</button>
+          <button class="tag" data-v="Vocabulary matching">Vocabulary</button>
+          <button class="tag" data-v="Discussion questions">Discussion</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Topic</label>
+        <input type="text" id="w-topic" placeholder="e.g. daily routines, environment, food…">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Number of exercises</label>
+          <select id="w-excount">
+            <option>3 exercises</option>
+            <option selected>4 exercises</option>
+            <option>5 exercises</option>
+            <option>6 exercises</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Answer key</label>
+          <select id="w-answers">
+            <option selected>Include answers</option>
+            <option>No answer key</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Extra instructions (optional)</label>
+        <textarea id="w-notes" placeholder="e.g. include a word bank, keep sentences short…"></textarea>
+      </div>
+      <button class="btn-main" id="w-btn" onclick="runWorksheet()">Generate worksheet</button>
+      <div class="credit-warning" id="w-warn">You've used all 5 free credits. <a onclick="showUpgrade()">Upgrade to Pro</a> for unlimited generations.</div>
+    </aside>
+    <section class="output-wrap">
+      <div class="empty" id="w-empty"><div class="empty-icon">📄</div><p>Configure your worksheet and generate it here.</p></div>
+      <div class="loader" id="w-loader"><div class="spin"></div><span id="w-msg">Building your worksheet…</span></div>
+      <div class="result-card" id="w-result">
+        <div class="result-header">
+          <div>
+            <div class="result-title" id="w-title"></div>
+            <div class="pill-row" id="w-pills"></div>
+          </div>
+          <div class="result-actions">
+            <button class="btn-sm" onclick="window.print()">Print</button>
+            <button class="btn-sm" id="w-copy" onclick="copyText('worksheet')">Copy</button>
+          </div>
+        </div>
+        <div class="result-body" id="w-body"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div class="overlay" id="upgradeModal">
+  <div class="modal">
+    <div class="modal-emoji">⚡</div>
+    <h2>Upgrade to ESLify Pro</h2>
+    <p>You've used your free credits. Upgrade for unlimited lesson plans, worksheets, and every tool we add.</p>
+    <div class="plans">
+      <div class="plan">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">$0</div>
+        <div class="plan-feats">5 lifetime credits<br>Lesson planner<br>Worksheet generator<br>Print & copy</div>
+      </div>
+      <div class="plan featured">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">$15 <span>/mo</span></div>
+        <div class="plan-note">or $99/year — save $81</div>
+        <div class="plan-feats">Unlimited generations<br>All tools included<br>Better AI model<br>Priority support<br>Early access to new tools</div>
+      </div>
+    </div>
+    <button class="btn-upgrade-big">Start free trial →</button>
+    <br>
+    <button class="modal-close" onclick="closeUpgrade()">Maybe later</button>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────
+// DEPRECATED: This prototype has been migrated to the Next.js app.
+// API key removed for security. Use the Next.js app with server-side OpenRouter proxy.
+const OPENROUTER_KEY = '';
+const FREE_MODEL = 'openai/gpt-oss-120b:free';
+const PRO_MODEL = 'anthropic/claude-haiku-3-5-20251001';
+// For real Pro users swap PRO_MODEL to 'anthropic/claude-sonnet-4-6'
+
+const CREDIT_KEY = 'eslify_credits';
+const TOTAL_FREE = 5;
+
+// ─── CREDITS ─────────────────────────────────────────────
+function getCredits(){
+  const v = localStorage.getItem(CREDIT_KEY);
+  if(v===null) return TOTAL_FREE;
+  return parseInt(v,10);
+}
+function useCredit(){
+  const c = getCredits();
+  localStorage.setItem(CREDIT_KEY, Math.max(0, c-1));
+  updateCreditUI();
+}
+function updateCreditUI(){
+  const c = getCredits();
+  const pill = document.getElementById('creditsPill');
+  pill.textContent = c + (c===1?' credit left':' credits left');
+  pill.className = 'credits-pill' + (c<=1?' low':'') + (c===0?' empty':'');
+  ['l-btn','w-btn'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b){ b.disabled=c===0; }
+  });
+  ['l-warn','w-warn'].forEach(id=>{
+    const w=document.getElementById(id);
+    if(w){ w.style.display=c===0?'block':'none'; }
+  });
+}
+
+// ─── PAGES ───────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ─── TAG TOGGLES ─────────────────────────────────────────
+['l-types','w-types'].forEach(groupId=>{
+  const g = document.getElementById(groupId);
+  if(!g) return;
+  g.querySelectorAll('.tag').forEach(t=>{
+    t.addEventListener('click',()=>{
+      g.querySelectorAll('.tag').forEach(x=>x.classList.remove('on'));
+      t.classList.add('on');
+    });
+  });
+});
+
+// ─── API CALL ────────────────────────────────────────────
+async function callAI(prompt, isPro=false){
+  const model = isPro ? PRO_MODEL : FREE_MODEL;
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer '+OPENROUTER_KEY,
+      'HTTP-Referer':'https://eslify.io',
+      'X-Title':'ESLify'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 1200,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error?.message||'API error');
+  return data.choices?.[0]?.message?.content || '';
+}
+
+// ─── LESSON PLANNER ──────────────────────────────────────
+let lessonText = '';
+
+async function runLesson(){
+  if(getCredits()<=0){ showUpgrade(); return; }
+  const level = document.getElementById('l-level').value;
+  const type = document.querySelector('#l-types .tag.on')?.dataset.v || 'Speaking';
+  const topic = document.getElementById('l-topic').value || 'general conversation';
+  const dur = document.getElementById('l-dur').value;
+  const size = document.getElementById('l-size').value;
+  const goals = document.getElementById('l-goals').value;
+
+  document.getElementById('l-empty').style.display='none';
+  document.getElementById('l-result').style.display='none';
+  document.getElementById('l-checker').style.display='none';
+  document.getElementById('l-loader').style.display='flex';
+
+  const msgs=['Writing your lesson plan…','Structuring activities…','Adding timing and materials…','Almost ready…'];
+  let mi=0;
+  const tick=setInterval(()=>{ mi=(mi+1)%msgs.length; document.getElementById('l-msg').textContent=msgs[mi]; },1800);
+
+  const prompt=`You are an expert ESL curriculum designer. Create a detailed, practical lesson plan.
+
+LESSON TITLE: [Creative specific title for this topic]
+
+OVERVIEW
+Level: ${level} | Type: ${type} | Topic: ${topic} | Duration: ${dur} | Class: ${size}${goals?'\nTeacher goals: '+goals:''}
+
+LEARNING OBJECTIVES
+List 3 clear measurable objectives starting with action verbs.
+
+MATERIALS NEEDED
+Brief list only.
+
+WARM-UP (give specific timing)
+Specific engaging activity connected to the topic.
+
+PRESENTATION (give specific timing)
+How to introduce the main language or skill. Include example language or structures.
+
+PRACTICE (give specific timing)
+Two structured practice activities with clear instructions.
+
+PRODUCTION (give specific timing)
+A freer communicative task using the target language.
+
+WRAP-UP (give specific timing)
+How to close and check understanding.
+
+HOMEWORK
+One optional task.
+
+DIFFERENTIATION
+One tip for stronger students, one for those needing support.
+
+Use plain text only. No markdown symbols. Separate sections with the exact headings above.`;
+
+  try{
+    const text = await callAI(prompt);
+    lessonText = text;
+    clearInterval(tick);
+    useCredit();
+
+    const titleMatch = text.match(/LESSON TITLE:\s*(.+)/i);
+    const title = titleMatch ? titleMatch[1].trim() : topic+' — '+type;
+    document.getElementById('l-title').textContent = title;
+    document.getElementById('l-pills').innerHTML =
+      `<span class="pill pill-blue">${level.split('—')[0].trim()}</span>
+       <span class="pill pill-green">${type}</span>
+       <span class="pill pill-amber">${dur}</span>`;
+
+    const body = text.replace(/LESSON TITLE:.+\n?/i,'').trim();
+    const sectionRx = /\n(?=[A-Z][A-Z\s&\-\/()]+\n)/g;
+    const parts = body.split(sectionRx);
+    document.getElementById('l-body').innerHTML = parts.map(s=>{
+      const lines=s.trim().split('\n');
+      const h=lines[0].trim();
+      const c=lines.slice(1).join('\n').trim();
+      if(!c) return '';
+      return `<div class="section"><div class="section-label">${h}</div><div class="section-content">${c}</div></div>`;
+    }).join('');
+
+    document.getElementById('l-loader').style.display='none';
+    document.getElementById('l-result').style.display='block';
+    document.getElementById('l-checker').style.display='block';
+    document.getElementById('l-check-body').style.display='none';
+    document.getElementById('l-check-btn').disabled=false;
+    document.getElementById('l-check-btn').textContent='Check this lesson';
+  } catch(e){
+    clearInterval(tick);
+    document.getElementById('l-loader').style.display='none';
+    document.getElementById('l-empty').style.display='flex';
+    document.getElementById('l-empty').innerHTML='<div class="empty-icon">⚠️</div><p>Something went wrong. Check your API key and try again.</p>';
+  }
+}
+
+// ─── QUALITY CHECKER ─────────────────────────────────────
+async function runCheck(){
+  if(!lessonText) return;
+  const btn=document.getElementById('l-check-btn');
+  btn.disabled=true; btn.textContent='Checking…';
+
+  const prompt=`You are a senior ESL teacher trainer. Review this lesson plan and respond ONLY with valid JSON, nothing else, no backticks:
+
+${lessonText}
+
+Return exactly:
+{"scores":{"structure":85,"level_fit":88,"engagement":76,"timing":82},"overall":83,"feedback":[{"type":"ok","text":"strength here"},{"type":"ok","text":"another strength"},{"type":"warn","text":"something to improve"},{"type":"tip","text":"specific suggestion"}]}
+
+Scores are integers 0-100. feedback must have 4-6 items. type must be ok, warn, or tip only.`;
+
+  try{
+    const raw = await callAI(prompt);
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const r = JSON.parse(clean);
+    const {scores,overall,feedback} = r;
+
+    const cls = v => v>=80?'good':v>=60?'mid':'bad';
+    const scoreHtml = Object.entries(scores).map(([k,v])=>
+      `<div class="score-box"><div class="score-n ${cls(v)}">${v}</div><div class="score-l">${k.replace(/_/g,' ')}</div></div>`
+    ).join('');
+
+    const fbHtml = feedback.map(f=>{
+      const icons={ok:'✓',warn:'!',tip:'★'};
+      return `<div class="fb-item"><div class="fb-dot ${f.type}">${icons[f.type]}</div><div>${f.text}</div></div>`;
+    }).join('');
+
+    const cb = document.getElementById('l-check-body');
+    cb.innerHTML=`<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:1rem">
+      <span style="font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:var(--ink)" >${overall}</span>
+      <span style="font-size:12px;color:var(--ink-3)">overall score</span></div>
+      <div class="scores">${scoreHtml}</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--amber-border)">Feedback</div>
+      ${fbHtml}`;
+    cb.style.display='block';
+    btn.textContent='Re-check'; btn.disabled=false;
+  } catch(e){
+    btn.disabled=false; btn.textContent='Check this lesson';
+  }
+}
+
+// ─── WORKSHEET GENERATOR ─────────────────────────────────
+let worksheetText = '';
+
+async function runWorksheet(){
+  if(getCredits()<=0){ showUpgrade(); return; }
+  const level = document.getElementById('w-level').value;
+  const focus = document.querySelector('#w-types .tag.on')?.dataset.v || 'Mixed exercises';
+  const topic = document.getElementById('w-topic').value || 'general English';
+  const excount = document.getElementById('w-excount').value;
+  const answers = document.getElementById('w-answers').value;
+  const notes = document.getElementById('w-notes').value;
+
+  document.getElementById('w-empty').style.display='none';
+  document.getElementById('w-result').style.display='none';
+  document.getElementById('w-loader').style.display='flex';
+
+  const msgs=['Building your worksheet…','Writing exercises…','Formatting for print…','Almost ready…'];
+  let mi=0;
+  const tick=setInterval(()=>{ mi=(mi+1)%msgs.length; document.getElementById('w-msg').textContent=msgs[mi]; },1800);
+
+  const prompt=`You are an expert ESL materials writer. Create a complete, print-ready student worksheet.
+
+WORKSHEET TITLE: [Clear descriptive title]
+
+STUDENT INFO LINE
+Name: _______________ Date: _______________ Class: _______________
+
+INTRODUCTION
+One sentence explaining what this worksheet practises.
+
+Then create exactly ${excount} at level ${level} on the topic: ${topic}
+Focus type: ${focus}
+${notes?'Extra instructions: '+notes:''}
+${answers==='Include answers'?'At the end include an ANSWER KEY section with all answers clearly labelled.':'Do not include answers.'}
+
+Format each exercise like this:
+EXERCISE 1: [Exercise type name]
+Instructions: [Clear student-facing instructions]
+[The exercise content]
+
+Use plain text only. No markdown. Number all items clearly. Leave blank lines between exercises. Make it genuinely useful and level-appropriate. Write the exercises as if this will be printed and handed to students.`;
+
+  try{
+    const text = await callAI(prompt);
+    worksheetText = text;
+    clearInterval(tick);
+    useCredit();
+
+    const titleMatch = text.match(/WORKSHEET TITLE:\s*(.+)/i);
+    const title = titleMatch ? titleMatch[1].trim() : topic+' Worksheet';
+    document.getElementById('w-title').textContent = title;
+    document.getElementById('w-pills').innerHTML =
+      `<span class="pill pill-blue">${level.split('—')[0].trim()}</span>
+       <span class="pill pill-green">${focus}</span>
+       <span class="pill pill-amber">${excount}</span>`;
+
+    const body = text.replace(/WORKSHEET TITLE:.+\n?/i,'').trim();
+    const sectionRx = /\n(?=EXERCISE \d+:|STUDENT INFO|INTRODUCTION|ANSWER KEY)/g;
+    const parts = body.split(sectionRx);
+    document.getElementById('w-body').innerHTML = parts.map(s=>{
+      const lines=s.trim().split('\n');
+      const h=lines[0].trim();
+      const c=lines.slice(1).join('\n').trim();
+      if(!c&&!h) return '';
+      if(c){
+        return `<div class="section"><div class="section-label">${h}</div><div class="section-content">${c}</div></div>`;
+      }
+      return `<div class="section"><div class="section-content">${h}</div></div>`;
+    }).join('');
+
+    document.getElementById('w-loader').style.display='none';
+    document.getElementById('w-result').style.display='block';
+  } catch(e){
+    clearInterval(tick);
+    document.getElementById('w-loader').style.display='none';
+    document.getElementById('w-empty').style.display='flex';
+    document.getElementById('w-empty').innerHTML='<div class="empty-icon">⚠️</div><p>Something went wrong. Check your API key and try again.</p>';
+  }
+}
+
+// ─── COPY ────────────────────────────────────────────────
+function copyText(which){
+  const t = which==='lesson' ? lessonText : worksheetText;
+  const btnId = which==='lesson' ? 'l-copy' : 'w-copy';
+  if(!t) return;
+  navigator.clipboard.writeText(t).then(()=>{
+    const b=document.getElementById(btnId);
+    b.textContent='Copied!';
+    setTimeout(()=>b.textContent='Copy',1800);
+  });
+}
+
+// ─── UPGRADE MODAL ───────────────────────────────────────
+function showUpgrade(){ document.getElementById('upgradeModal').classList.add('open'); }
+function closeUpgrade(){ document.getElementById('upgradeModal').classList.remove('open'); }
+document.getElementById('upgradeModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeUpgrade(); });
+
+// ─── INIT ────────────────────────────────────────────────
+updateCreditUI();
+</script>
+</body>
+</html>
