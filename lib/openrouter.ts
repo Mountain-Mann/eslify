@@ -123,6 +123,9 @@ CORE RULES — these are non-negotiable:
 - No item should be answerable by guessing or without language knowledge.
 - Sentence length and grammar complexity must strictly match the level guidance above.
 - Write all exercise content in full. Never use "etc.", "[add more]", or placeholder text of any kind.
+- For multiple choice questions, the full sentence with the blank must be grammatically complete and readable on its own — read each question sentence aloud mentally before finalizing. A sentence like "I ever seen such a storm" is missing the word "have" and is broken; it must read "I have never seen such a storm" with the blank correctly placed so each answer option fits naturally into it.
+- Never write a meta-instruction like "(choose one word for each blank)" as part of an answer option. Each option must be a complete, standalone word or short phrase only.
+- Before finalizing each multiple choice item, verify: does inserting option A, B, and C each produce a complete, grammatically correct sentence? If any option breaks the sentence, rewrite the question.
 
 Use this exact structure:
 
