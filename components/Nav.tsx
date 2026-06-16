@@ -40,7 +40,14 @@ export default function Nav() {
   return (
     <nav>
       <Link href="/" className="logo">
-        <Image src="/logo.png" alt="ESLify" width={140} height={32} priority />
+      <Image
+        src="/logo.png"
+        alt="ESLify"
+        width={500}
+        height={500}
+        style={{ height: "40px", width: "auto" }}
+        priority
+      />
         <span className="logo-badge">BETA</span>
       </Link>
       <div className="nav-right">
