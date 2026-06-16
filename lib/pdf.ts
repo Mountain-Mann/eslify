@@ -40,7 +40,7 @@ interface GeneratePdfOptions {
 const PAGE_WIDTH = 595.28; // A4 in pt
 const PAGE_HEIGHT = 841.89;
 const MARGIN = 56; // ~0.78in
-const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2;
+const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2 - 4;
 
 /**
  * Generates a clean, real PDF (not a page screenshot) from structured
