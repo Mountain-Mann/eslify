@@ -45,7 +45,7 @@ export default function Nav() {
         alt="ESLify"
         width={500}
         height={500}
-        style={{ height: "40px", width: "auto" }}
+        style={{ height: "64px", width: "auto" }}
         priority
       />
         <span className="logo-badge">BETA</span>
