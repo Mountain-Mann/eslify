@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUpgrade } from "./UpgradeProvider";
 import { useUser } from "./UserProvider";
+import Image from "next/image";
 
 export default function Nav() {
   const { user, loading } = useUser();
@@ -39,7 +40,8 @@ export default function Nav() {
   return (
     <nav>
       <Link href="/" className="logo">
-        ESLify <span className="logo-badge">BETA</span>
+        <Image src="/images/logo.png" alt="ESLify" width={140} height={32} priority />
+        <span className="logo-badge">BETA</span>
       </Link>
       <div className="nav-right">
         {!loading && user && !user.isPro && (
