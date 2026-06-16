@@ -40,12 +40,22 @@ interface GeneratePdfOptions {
 const PAGE_WIDTH = 595.28; // A4 in pt
 const PAGE_HEIGHT = 841.89;
 const MARGIN = 56; // ~0.78in
-const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2 - 4;
+const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2;
+const LINE_HEIGHT = 14;
 
 /**
  * Generates a clean, real PDF (not a page screenshot) from structured
  * lesson/worksheet sections. Answer key sections are forced onto a new
  * page automatically.
+ *
+ * IMPORTANT: every text draw call renders ONE line at a time (never an
+ * array of lines passed to doc.text()) and re-asserts font/size/color
+ * immediately before drawing. Passing wrapped-line arrays directly to
+ * jsPDF's text() has been observed to occasionally corrupt glyph spacing
+ * on some lines (rendering as letter-by-letter with stray characters
+ * between each one) when font state changes earlier in the same
+ * document. Rendering defensively, line by line, avoids that class of
+ * bug entirely.
  */
 export function generatePdf({
   title,
@@ -64,29 +74,61 @@ export function generatePdf({
     }
   };
 
+  // Draws a single already-measured line, re-asserting font state first.
+  const drawLine = (
+    line: string,
+    x: number,
+    font: "helvetica",
+    style: "normal" | "bold",
+    size: number,
+    color: [number, number, number]
+  ) => {
+    doc.setFont(font, style);
+    doc.setFontSize(size);
+    doc.setTextColor(color[0], color[1], color[2]);
+    doc.text(line, x, y);
+  };
+
+  // Wraps text and draws every resulting line individually.
+  const drawWrapped = (
+    text: string,
+    x: number,
+    width: number,
+    style: "normal" | "bold",
+    size: number,
+    color: [number, number, number]
+  ) => {
+    doc.setFont("helvetica", style);
+    doc.setFontSize(size);
+    const lines: string[] = doc.splitTextToSize(text, width);
+    for (const line of lines) {
+      ensureSpace(LINE_HEIGHT + 2);
+      drawLine(line, x, "helvetica", style, size, color);
+      y += LINE_HEIGHT;
+    }
+  };
+
   // Title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  const titleLines = doc.splitTextToSize(title, CONTENT_WIDTH);
-  doc.text(titleLines, MARGIN, y);
-  y += titleLines.length * 22 + 4;
+  drawWrapped(title, MARGIN, CONTENT_WIDTH, "bold", 18, [20, 20, 20]);
+  y += 6;
 
   // Subtitle (level / type / duration)
   if (subtitle) {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(110, 110, 110);
-    doc.text(subtitle, MARGIN, y);
-    doc.setTextColor(20, 20, 20);
-    y += 18;
+    drawWrapped(subtitle, MARGIN, CONTENT_WIDTH, "normal", 10, [110, 110, 110]);
+    y += 8;
   }
 
   // Student info line
   if (studentInfoLine) {
     ensureSpace(30);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text("Name: _______________________   Date: _____________   Class: ___________", MARGIN, y);
+    drawLine(
+      "Name: _______________________   Date: _____________   Class: ___________",
+      MARGIN,
+      "helvetica",
+      "normal",
+      11,
+      [20, 20, 20]
+    );
     y += 26;
   }
 
@@ -107,13 +149,15 @@ export function generatePdf({
     }
 
     if (section.heading) {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(46, 93, 75); // brand-ish green, matches app accent
-      const headingText = section.heading.toUpperCase();
       ensureSpace(18);
-      doc.text(headingText, MARGIN, y);
-      doc.setTextColor(20, 20, 20);
+      drawLine(
+        section.heading.toUpperCase(),
+        MARGIN,
+        "helvetica",
+        "bold",
+        11,
+        [46, 93, 75] // brand-ish green, matches app accent
+      );
       y += 8;
       doc.setDrawColor(232, 242, 238);
       doc.line(MARGIN, y, PAGE_WIDTH - MARGIN, y);
@@ -121,20 +165,40 @@ export function generatePdf({
     }
 
     if (section.content) {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
       const cleaned = cleanMarkdown(section.content);
       const paragraphs = cleaned.split("\n");
 
-      for (const para of paragraphs) {
-        if (!para.trim()) {
+      for (const rawPara of paragraphs) {
+        if (!rawPara.trim()) {
           y += 8;
           continue;
         }
-        const lines = doc.splitTextToSize(para, CONTENT_WIDTH);
-        ensureSpace(lines.length * 14 + 4);
-        doc.text(lines, MARGIN, y);
-        y += lines.length * 14 + 4;
+
+        // Detect a leading indent (used for "a) b) c)" style sub-options
+        // that the model sometimes puts on an indented continuation line).
+        const indentMatch = rawPara.match(/^(\s{2,})/);
+        const indentPt = indentMatch ? 18 : 0;
+        const para = rawPara.trim();
+        const availWidth = CONTENT_WIDTH - indentPt;
+
+        // If a line contains multiple lettered options separated by
+        // multiple spaces (e.g. "a) menu   b) chair   c) floor"), force
+        // each option onto its own visual line.
+        const optionSplit = para.split(/(?<=\))\s{2,}(?=[a-d]\))/i);
+        const piecesToRender =
+          optionSplit.length > 1 ? optionSplit : [para];
+
+        for (const piece of piecesToRender) {
+          drawWrapped(
+            piece,
+            MARGIN + indentPt,
+            availWidth,
+            "normal",
+            11,
+            [20, 20, 20]
+          );
+          y += 2;
+        }
       }
     }
 
