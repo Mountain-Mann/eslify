@@ -8,6 +8,7 @@ import { TagRow } from "@/components/TagRow";
 import { generateContent, parseSections } from "@/lib/tools";
 import { useRotatingMessage } from "@/hooks/useRotatingMessage";
 import { lessonPrompt, checkerPrompt } from "@/lib/openrouter";
+import { cleanMarkdown, generatePdf } from "@/lib/pdf";
 
 const LESSON_TYPES = [
   "Speaking & conversation",
@@ -77,13 +78,14 @@ export default function LessonPlanner() {
     });
 
     try {
-      const { content } = await generateContent("lesson", prompt);
+      const { content: rawContent } = await generateContent("lesson", prompt);
+      const content = cleanMarkdown(rawContent);
       setLessonText(content);
 
       const titleMatch = content.match(/LESSON TITLE\s*\n+(.+)/i);
       setTitle(
         titleMatch
-          ? titleMatch[1].trim()
+          ? cleanMarkdown(titleMatch[1].trim())
           : `${topic || "Lesson"} — ${type}`
       );
 
@@ -125,6 +127,16 @@ export default function LessonPlanner() {
   function copyText() {
     if (!lessonText) return;
     navigator.clipboard.writeText(lessonText);
+  }
+
+  function downloadPdf() {
+    if (!lessonText) return;
+    generatePdf({
+      title,
+      subtitle: `${level.split("—")[0].trim()}  •  ${type}  •  ${duration}`,
+      sections,
+      filename: `${title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`,
+    });
   }
 
   const scoreClass = (v: number) =>
@@ -234,7 +246,7 @@ export default function LessonPlanner() {
             </div>
           )}
           {showResult && !loading && (
-            <div className="result-card">
+            <div className="result-card" id="lesson-print-area">
               <div className="result-header">
                 <div>
                   <div className="result-title">{title}</div>
@@ -247,8 +259,8 @@ export default function LessonPlanner() {
                   </div>
                 </div>
                 <div className="result-actions">
-                  <button className="btn-sm" onClick={() => window.print()}>
-                    Print
+                  <button className="btn-sm" onClick={downloadPdf}>
+                    Download PDF
                   </button>
                   <button className="btn-sm" onClick={copyText}>
                     Copy

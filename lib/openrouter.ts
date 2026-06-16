@@ -33,6 +33,8 @@ LESSON DETAILS:
 - Class size: ${classSize}
 ${goals ? `- Teacher goals: ${goals}` : ''}
 
+CRITICAL FORMATTING RULE: Output plain text only. Never use asterisks (*), hashtags (#), backticks, underscores for emphasis, or any markdown syntax anywhere in your response — not even for emphasis. If you want to emphasize something, use CAPITAL LETTERS or simply rely on sentence structure instead. This rule applies to every section without exception.
+
 Your task is to write a complete, specific, immediately teachable lesson plan. Vague activities like "discuss the topic in pairs" are not acceptable. Every activity must have a named format, clear step-by-step instructions, and example language.
 
 Use this exact structure with these exact headings:
@@ -102,6 +104,8 @@ export function worksheetPrompt({
 }): string {
   const count = exerciseCount.replace(' exercises', '');
   return `You are an expert ESL materials writer with experience writing for Cambridge University Press and Pearson publications. Every worksheet you produce is immediately printable and usable in class with zero editing.
+
+  CRITICAL FORMATTING RULE: Output plain text only. Never use asterisks (*), hashtags (#), backticks, underscores for emphasis, or any markdown syntax anywhere in your response — not even for emphasis. If you want to emphasize something, use CAPITAL LETTERS or simply rely on sentence structure instead. This rule applies to every section without exception.
 
 WORKSHEET SPECIFICATIONS:
 - Student level: ${level}

@@ -8,6 +8,7 @@ import { TagRow } from "@/components/TagRow";
 import { generateContent, parseSections } from "@/lib/tools";
 import { useRotatingMessage } from "@/hooks/useRotatingMessage";
 import { worksheetPrompt } from "@/lib/openrouter";
+import { cleanMarkdown, generatePdf } from "@/lib/pdf";
 
 const WORKSHEET_TYPES = [
   "Mixed exercises",
@@ -66,13 +67,14 @@ export default function WorksheetGenerator() {
     });
 
     try {
-      const { content } = await generateContent("worksheet", prompt);
+      const { content: rawContent } = await generateContent("worksheet", prompt);
+      const content = cleanMarkdown(rawContent);
       setWorksheetText(content);
 
       const titleMatch = content.match(/WORKSHEET TITLE\s*\n+(.+)/i);
       setTitle(
         titleMatch
-          ? titleMatch[1].trim()
+          ? cleanMarkdown(titleMatch[1].trim())
           : `${topic || "General"} Worksheet`
       );
 
@@ -97,6 +99,28 @@ export default function WorksheetGenerator() {
   function copyText() {
     if (!worksheetText) return;
     navigator.clipboard.writeText(worksheetText);
+  }
+
+  function downloadPdf() {
+    if (!worksheetText) return;
+
+    // Flag the answer key section so the PDF generator forces a page break
+    // before it, and skip the redundant "Name: ___ Date: ___" line from
+    // the AI body since the PDF already renders a proper student info line.
+    const pdfSections = sections
+      .filter((s) => !/^name:\s*_+/i.test(s.heading))
+      .map((s) => ({
+        ...s,
+        isAnswerKey: /answer key/i.test(s.heading),
+      }));
+
+    generatePdf({
+      title,
+      subtitle: `${level.split("—")[0].trim()}  •  ${focus}  •  ${excount}`,
+      sections: pdfSections,
+      studentInfoLine: true,
+      filename: `${title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`,
+    });
   }
 
   return (
@@ -211,8 +235,8 @@ export default function WorksheetGenerator() {
                   </div>
                 </div>
                 <div className="result-actions">
-                  <button className="btn-sm" onClick={() => window.print()}>
-                    Print
+                  <button className="btn-sm" onClick={downloadPdf}>
+                    Download PDF
                   </button>
                   <button className="btn-sm" onClick={copyText}>
                     Copy
