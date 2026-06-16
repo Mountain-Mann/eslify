@@ -207,7 +207,7 @@ export async function callOpenRouter({
   retries?: number;
 }): Promise<string> {
   const model = isPro
-    ? 'anthropic/claude-haiku-3-5-20251001'
+    ? 'anthropic/claude-3.5-haiku'
     : 'openai/gpt-oss-120b:free';
 
   try {
