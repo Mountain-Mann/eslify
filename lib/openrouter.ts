@@ -150,7 +150,11 @@ SELF-CHECK before finishing — mentally verify each of these:
 - Does every gap fill have exactly one correct answer? If not, rewrite it.
 - Does vocabulary stay within the ${level} level guidance? If not, simplify or elevate accordingly.
 - Do the exercises build progressively in difficulty? If not, reorder them.
-- Is all content written in full with no placeholders? If not, complete it.`;
+- Is all content written in full with no placeholders? If not, complete it.
+
+Do not write "self-check completed" or any meta-commentary about this 
+process in the output. The self-check is for your own internal verification 
+only and should never appear in the final text.`;
 }
 
 export function checkerPrompt(lessonText: string): string {
