@@ -23,6 +23,7 @@ export async function POST(request: Request) {
   }
 
   const { tool, prompt } = body;
+
   if (!tool || !prompt) {
     return NextResponse.json(
       { error: "tool and prompt are required" },
@@ -85,7 +86,7 @@ export async function POST(request: Request) {
   const model = isPro ? PRO_MODEL : FREE_MODEL;
 
   try {
-    const content = await callOpenRouter(prompt, isPro);
+    const content = await callOpenRouter({ prompt, isPro });
 
     await service.from("generations").insert({
       user_id: user.id,
@@ -103,6 +104,7 @@ export async function POST(request: Request) {
       const { data: refunded } = await service.rpc("refund_credit", {
         p_user_id: user.id,
       });
+
       if (typeof refunded === "number") {
         creditsRemaining = refunded;
       }

@@ -7,6 +7,7 @@ import { useUser } from "@/components/UserProvider";
 import { TagRow } from "@/components/TagRow";
 import { generateContent, parseSections } from "@/lib/tools";
 import { useRotatingMessage } from "@/hooks/useRotatingMessage";
+import { worksheetPrompt } from "@/lib/openrouter";
 
 const WORKSHEET_TYPES = [
   "Mixed exercises",
@@ -55,42 +56,29 @@ export default function WorksheetGenerator() {
     setError(null);
     setShowResult(false);
 
-    const prompt = `You are an expert ESL materials writer. Create a complete, print-ready student worksheet.
-
-WORKSHEET TITLE: [Clear descriptive title]
-
-STUDENT INFO LINE
-Name: _______________ Date: _______________ Class: _______________
-
-INTRODUCTION
-One sentence explaining what this worksheet practises.
-
-Then create exactly ${excount} at level ${level} on the topic: ${topic || "general English"}
-Focus type: ${focus}
-${notes ? `Extra instructions: ${notes}` : ""}
-${answers === "Include answers" ? "At the end include an ANSWER KEY section with all answers clearly labelled." : "Do not include answers."}
-
-Format each exercise like this:
-EXERCISE 1: [Exercise type name]
-Instructions: [Clear student-facing instructions]
-[The exercise content]
-
-Use plain text only. No markdown. Number all items clearly. Leave blank lines between exercises. Make it genuinely useful and level-appropriate. Write the exercises as if this will be printed and handed to students.`;
+    const prompt = worksheetPrompt({
+      level,
+      focus,
+      topic: topic || "general English",
+      exerciseCount: excount,
+      includeAnswers: answers === "Include answers",
+      notes: notes || undefined,
+    });
 
     try {
       const { content } = await generateContent("worksheet", prompt);
       setWorksheetText(content);
 
-      const titleMatch = content.match(/WORKSHEET TITLE:\s*(.+)/i);
+      const titleMatch = content.match(/WORKSHEET TITLE\s*\n+(.+)/i);
       setTitle(
         titleMatch
           ? titleMatch[1].trim()
           : `${topic || "General"} Worksheet`
       );
 
-      const body = content.replace(/WORKSHEET TITLE:.+\n?/i, "").trim();
+      const body = content.replace(/WORKSHEET TITLE\s*\n+.+\n?/i, "").trim();
       const sectionRx =
-        /\n(?=EXERCISE \d+:|STUDENT INFO|INTRODUCTION|ANSWER KEY)/g;
+        /\n(?=EXERCISE \d+:|INTRODUCTION|ANSWER KEY|Name:)/g;
       setSections(parseSections(body, sectionRx));
       setShowResult(true);
       await refreshUser();

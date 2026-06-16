@@ -7,6 +7,7 @@ import { useUser } from "@/components/UserProvider";
 import { TagRow } from "@/components/TagRow";
 import { generateContent, parseSections } from "@/lib/tools";
 import { useRotatingMessage } from "@/hooks/useRotatingMessage";
+import { lessonPrompt, checkerPrompt } from "@/lib/openrouter";
 
 const LESSON_TYPES = [
   "Speaking & conversation",
@@ -66,54 +67,27 @@ export default function LessonPlanner() {
     setShowChecker(false);
     setCheckResult(null);
 
-    const prompt = `You are an expert ESL curriculum designer. Create a detailed, practical lesson plan.
-
-LESSON TITLE: [Creative specific title for this topic]
-
-OVERVIEW
-Level: ${level} | Type: ${type} | Topic: ${topic || "general conversation"} | Duration: ${duration} | Class: ${classSize}${goals ? `\nTeacher goals: ${goals}` : ""}
-
-LEARNING OBJECTIVES
-List 3 clear measurable objectives starting with action verbs.
-
-MATERIALS NEEDED
-Brief list only.
-
-WARM-UP (give specific timing)
-Specific engaging activity connected to the topic.
-
-PRESENTATION (give specific timing)
-How to introduce the main language or skill. Include example language or structures.
-
-PRACTICE (give specific timing)
-Two structured practice activities with clear instructions.
-
-PRODUCTION (give specific timing)
-A freer communicative task using the target language.
-
-WRAP-UP (give specific timing)
-How to close and check understanding.
-
-HOMEWORK
-One optional task.
-
-DIFFERENTIATION
-One tip for stronger students, one for those needing support.
-
-Use plain text only. No markdown symbols. Separate sections with the exact headings above.`;
+    const prompt = lessonPrompt({
+      level,
+      type,
+      topic: topic || "general conversation",
+      duration,
+      classSize,
+      goals: goals || undefined,
+    });
 
     try {
       const { content } = await generateContent("lesson", prompt);
       setLessonText(content);
 
-      const titleMatch = content.match(/LESSON TITLE:\s*(.+)/i);
+      const titleMatch = content.match(/LESSON TITLE\s*\n+(.+)/i);
       setTitle(
         titleMatch
           ? titleMatch[1].trim()
           : `${topic || "Lesson"} — ${type}`
       );
 
-      const body = content.replace(/LESSON TITLE:.+\n?/i, "").trim();
+      const body = content.replace(/LESSON TITLE\s*\n+.+\n?/i, "").trim();
       const sectionRx = /\n(?=[A-Z][A-Z\s&\-\/()]+\n)/g;
       setSections(parseSections(body, sectionRx));
       setShowResult(true);
@@ -135,14 +109,7 @@ Use plain text only. No markdown symbols. Separate sections with the exact headi
     if (!lessonText || !user?.isPro) return;
     setChecking(true);
 
-    const prompt = `You are a senior ESL teacher trainer. Review this lesson plan and respond ONLY with valid JSON, nothing else, no backticks:
-
-${lessonText}
-
-Return exactly:
-{"scores":{"structure":85,"level_fit":88,"engagement":76,"timing":82},"overall":83,"feedback":[{"type":"ok","text":"strength here"},{"type":"ok","text":"another strength"},{"type":"warn","text":"something to improve"},{"type":"tip","text":"specific suggestion"}]}
-
-Scores are integers 0-100. feedback must have 4-6 items. type must be ok, warn, or tip only.`;
+    const prompt = checkerPrompt(lessonText);
 
     try {
       const { content } = await generateContent("check", prompt);
