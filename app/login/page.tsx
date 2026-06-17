@@ -21,10 +21,16 @@ function LoginForm() {
     const supabase = createClient();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
 
+    // IMPORTANT: do NOT encodeURIComponent the redirect value here.
+    // Supabase encodes the entire emailRedirectTo URL itself when it
+    // builds the verification link, so manually encoding the redirect
+    // param on top of that double-encodes it (e.g. "/" becomes "%252F"
+    // instead of "%2F"), which breaks the callback route's ability to
+    // read it correctly after the magic link is clicked.
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${appUrl}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
+        emailRedirectTo: `${appUrl}/auth/callback?redirect=${redirect}`,
       },
     });
 
