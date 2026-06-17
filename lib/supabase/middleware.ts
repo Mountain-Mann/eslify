@@ -36,7 +36,11 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const protectedPaths = ["/lesson", "/worksheet"];
+  // /lesson and /worksheet are intentionally NOT in this list anymore —
+  // the free tools are usable without an account (tracked via an
+  // anonymous ID instead). Only routes that require a real billing
+  // identity (e.g. a future account/billing page) should go here.
+  const protectedPaths: string[] = [];
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );

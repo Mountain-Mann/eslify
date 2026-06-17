@@ -1,3 +1,5 @@
+import { getAnonId } from "@/lib/anon";
+
 export async function generateContent(
   tool: "lesson" | "worksheet" | "check",
   prompt: string
@@ -6,12 +8,13 @@ export async function generateContent(
   creditsRemaining: number;
   isPro: boolean;
 }> {
+  const anonId = getAnonId();
+
   const res = await fetch("/api/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ tool, prompt }),
+    body: JSON.stringify({ tool, prompt, anonId }),
   });
-
   const data = await res.json();
   if (!res.ok) {
     const err = new Error(data.error || "Generation failed") as Error & {
@@ -22,7 +25,6 @@ export async function generateContent(
     err.code = data.code;
     throw err;
   }
-
   return data;
 }
 
