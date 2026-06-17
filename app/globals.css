@@ -951,3 +951,37 @@ textarea {
   font-size: 13px;
   margin-top: 1rem;
 }
+
+/* ─────────────────────────────────────────────────────────
+   ADD-ON: editable result content (inline editing feature)
+   Append this to the bottom of your existing globals.css.
+   No existing rules need to be removed — these only add new
+   selectors for the contentEditable title/section blocks.
+───────────────────────────────────────────────────────── */
+
+.result-title[contenteditable="true"],
+.section-content[contenteditable="true"] {
+  outline: none;
+  border-radius: 4px;
+  cursor: text;
+  transition: background 0.15s;
+}
+
+.result-title[contenteditable="true"]:hover,
+.section-content[contenteditable="true"]:hover {
+  background: var(--accent-bg);
+}
+
+.result-title[contenteditable="true"]:focus,
+.section-content[contenteditable="true"]:focus {
+  background: var(--accent-bg);
+  box-shadow: 0 0 0 2px var(--accent-border);
+}
+
+.edit-hint {
+  font-size: 11px;
+  color: var(--ink-3);
+  padding: 0 1.5rem;
+  margin-top: -4px;
+  margin-bottom: 4px;
+}

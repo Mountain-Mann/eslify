@@ -139,6 +139,25 @@ export default function LessonPlanner() {
     });
   }
 
+  // Called when the user clicks away from an edited section. Updates the
+  // section's content in state so both the on-screen view and the PDF
+  // export reflect the edit. We read from e.currentTarget rather than
+  // tracking onChange per keystroke to avoid fighting React's render
+  // cycle while contentEditable is focused.
+  function handleSectionEdit(
+    index: number,
+    e: React.FocusEvent<HTMLDivElement>
+  ) {
+    const newContent = e.currentTarget.innerText;
+    setSections((prev) =>
+      prev.map((s, i) => (i === index ? { ...s, content: newContent } : s))
+    );
+  }
+
+  function handleTitleEdit(e: React.FocusEvent<HTMLDivElement>) {
+    setTitle(e.currentTarget.innerText.trim());
+  }
+
   const scoreClass = (v: number) =>
     v >= 80 ? "good" : v >= 60 ? "mid" : "bad";
 
@@ -249,7 +268,14 @@ export default function LessonPlanner() {
             <div className="result-card" id="lesson-print-area">
               <div className="result-header">
                 <div>
-                  <div className="result-title">{title}</div>
+                  <div
+                    className="result-title"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleTitleEdit}
+                  >
+                    {title}
+                  </div>
                   <div className="pill-row">
                     <span className="pill pill-blue">
                       {level.split("—")[0].trim()}
@@ -267,12 +293,20 @@ export default function LessonPlanner() {
                   </button>
                 </div>
               </div>
+              <p className="edit-hint">Click any text below to edit it.</p>
               <div className="result-body">
-                {sections.map((s) =>
+                {sections.map((s, i) =>
                   s.content ? (
-                    <div key={s.heading} className="section">
+                    <div key={`section-${i}`} className="section">
                       <div className="section-label">{s.heading}</div>
-                      <div className="section-content">{s.content}</div>
+                      <div
+                        className="section-content"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={(e) => handleSectionEdit(i, e)}
+                      >
+                        {s.content}
+                      </div>
                     </div>
                   ) : null
                 )}

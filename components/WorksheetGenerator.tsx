@@ -101,6 +101,21 @@ export default function WorksheetGenerator() {
     navigator.clipboard.writeText(worksheetText);
   }
 
+  function handleSectionEdit(
+    index: number,
+    field: "heading" | "content",
+    e: React.FocusEvent<HTMLDivElement>
+  ) {
+    const newText = e.currentTarget.innerText;
+    setSections((prev) =>
+      prev.map((s, i) => (i === index ? { ...s, [field]: newText } : s))
+    );
+  }
+
+  function handleTitleEdit(e: React.FocusEvent<HTMLDivElement>) {
+    setTitle(e.currentTarget.innerText.trim());
+  }
+
   function downloadPdf() {
     if (!worksheetText) return;
 
@@ -225,7 +240,14 @@ export default function WorksheetGenerator() {
             <div className="result-card">
               <div className="result-header">
                 <div>
-                  <div className="result-title">{title}</div>
+                  <div
+                    className="result-title"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={handleTitleEdit}
+                  >
+                    {title}
+                  </div>
                   <div className="pill-row">
                     <span className="pill pill-blue">
                       {level.split("—")[0].trim()}
@@ -243,16 +265,31 @@ export default function WorksheetGenerator() {
                   </button>
                 </div>
               </div>
+              <p className="edit-hint">Click any text below to edit it.</p>
               <div className="result-body">
                 {sections.map((s, i) =>
                   s.content ? (
-                    <div key={`${s.heading}-${i}`} className="section">
+                    <div key={`section-${i}`} className="section">
                       <div className="section-label">{s.heading}</div>
-                      <div className="section-content">{s.content}</div>
+                      <div
+                        className="section-content"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={(e) => handleSectionEdit(i, "content", e)}
+                      >
+                        {s.content}
+                      </div>
                     </div>
                   ) : s.heading ? (
-                    <div key={`${s.heading}-${i}`} className="section">
-                      <div className="section-content">{s.heading}</div>
+                    <div key={`section-${i}`} className="section">
+                      <div
+                        className="section-content"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={(e) => handleSectionEdit(i, "heading", e)}
+                      >
+                        {s.heading}
+                      </div>
                     </div>
                   ) : null
                 )}
