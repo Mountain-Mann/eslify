@@ -85,9 +85,14 @@ export default function WorksheetGenerator() {
       setShowResult(true);
       await refreshUser();
     } catch (err) {
-      const error = err as Error & { status?: number };
+      const error = err as Error & { status?: number; message?: string };
       if (error.status === 402) {
         showUpgrade();
+      } else if (error.status === 429) {
+        setError(
+          error.message ||
+            "You've reached today's generation limit. It resets at midnight."
+        );
       } else {
         setError("Something went wrong. Please try again.");
       }
