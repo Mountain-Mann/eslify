@@ -1016,3 +1016,96 @@ textarea {
 .seo-intro p:last-child {
   margin-bottom: 0;
 }
+
+/* ─────────────────────────────────────────────────────────
+   ADD-ON: editable result content (inline editing feature)
+   Append this to the bottom of your existing globals.css.
+   No existing rules need to be removed — these only add new
+   selectors for the contentEditable title/section blocks.
+───────────────────────────────────────────────────────── */
+
+.result-title[contenteditable="true"],
+.section-content[contenteditable="true"] {
+  outline: none;
+  border-radius: 4px;
+  cursor: text;
+  transition: background 0.15s;
+}
+
+.result-title[contenteditable="true"]:hover,
+.section-content[contenteditable="true"]:hover {
+  background: var(--accent-bg);
+}
+
+.result-title[contenteditable="true"]:focus,
+.section-content[contenteditable="true"]:focus {
+  background: var(--accent-bg);
+  box-shadow: 0 0 0 2px var(--accent-border);
+}
+
+.edit-hint {
+  font-size: 11px;
+  color: var(--ink-3);
+  padding: 0 1.5rem;
+  margin-top: -4px;
+  margin-bottom: 4px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   ADD-ON: SEO intro section (below the tools grid)
+───────────────────────────────────────────────────────── */
+
+.seo-intro {
+  max-width: 720px;
+  margin: 3rem auto 4rem;
+  padding: 0 1.5rem;
+}
+
+.seo-intro h2 {
+  font-family: var(--font-syne), sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--ink);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.seo-intro p {
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+
+.seo-intro p:last-child {
+  margin-bottom: 0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   ADD-ON: password auth page (sign in / sign up switch links)
+───────────────────────────────────────────────────────── */
+
+.auth-switch {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-top: 4px;
+}
+
+.auth-switch:hover {
+  text-decoration: underline;
+}
+
+.auth-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 1rem 0 0.5rem;
+}
