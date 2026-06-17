@@ -100,6 +100,31 @@ export default function ToolsGrid() {
           );
         })}
       </div>
+      <section className="seo-intro">
+        <h2>AI lesson plans and worksheets for ESL teachers</h2>
+        <p>
+          ESLify is a free AI lesson plan generator built specifically for
+          ESL and EFL teachers. Create a complete, CEFR-aligned lesson plan
+          in seconds — just choose a level, topic, and lesson type, and get
+          a ready-to-teach plan with warm-up, presentation, practice, and
+          production activities included.
+        </p>
+        <p>
+          Need printable materials instead? The worksheet generator creates
+          classroom-ready ESL worksheets with gap fills, multiple choice
+          questions, reading comprehension, and discussion prompts, complete
+          with an answer key and a one-click PDF download. Every lesson plan
+          can also be checked by our built-in AI quality checker, which
+          scores structure, level-appropriateness, and engagement before you
+          walk into class.
+        </p>
+        <p>
+          Whether you teach online, in a private language school, or run
+          your own tutoring business, ESLify saves hours of lesson
+          preparation time. Start with five free generations, no credit
+          card required.
+        </p>
+      </section>
     </>
   );
 }
