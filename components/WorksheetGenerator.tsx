@@ -215,7 +215,7 @@ export default function WorksheetGenerator() {
           </button>
           {outOfCredits && (
             <div className="credit-warning" style={{ display: "block" }}>
-              You&apos;ve used all 5 free credits.{" "}
+              You&apos;ve used all 10 free credits this month.{" "}
               <button type="button" onClick={showUpgrade}>
                 Upgrade to Pro
               </button>{" "}

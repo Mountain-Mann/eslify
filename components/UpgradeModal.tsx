@@ -49,7 +49,7 @@ export default function UpgradeModal() {
             <div className="plan-name">Free</div>
             <div className="plan-price">$0</div>
             <div className="plan-feats">
-              5 lifetime credits
+              10 credits/month
               <br />
               Lesson planner
               <br />

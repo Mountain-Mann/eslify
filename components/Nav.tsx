@@ -33,7 +33,7 @@ export default function Nav() {
 
   function creditsClass(credits: number) {
     if (credits === 0) return "credits-pill empty";
-    if (credits <= 1) return "credits-pill low";
+    if (credits <= 3) return "credits-pill low";
     return "credits-pill";
   }
 
