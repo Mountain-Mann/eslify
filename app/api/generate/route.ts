@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     if (deductError || newBalance === null) {
       return NextResponse.json(
         {
-          error: "You've used your 5 free generations. Create a free account to keep going, or upgrade to Pro for unlimited access.",
+          error: "You've used your 10 free generations this month. Create a free account to keep going, or upgrade to Pro for unlimited access.",
           code: "NO_CREDITS",
         },
         { status: 402 }

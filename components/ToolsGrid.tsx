@@ -121,7 +121,7 @@ export default function ToolsGrid() {
         <p>
           Whether you teach online, in a private language school, or run
           your own tutoring business, ESLify saves hours of lesson
-          preparation time. Start with five free generations, no credit
+          preparation time. Start with 10 free generations per month, no credit
           card required.
         </p>
       </section>
