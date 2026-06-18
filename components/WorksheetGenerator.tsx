@@ -173,6 +173,7 @@ export default function WorksheetGenerator() {
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. daily routines, environment, food…"
+              maxLength={100}
             />
           </div>
           <div className="field-row">
@@ -202,6 +203,7 @@ export default function WorksheetGenerator() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. include a word bank, keep sentences short…"
+              maxLength={300}
             />
           </div>
           <button

@@ -196,6 +196,7 @@ export default function LessonPlanner() {
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. job interviews, travel, climate…"
+              maxLength={100}
             />
           </div>
           <div className="field-row">
@@ -230,6 +231,7 @@ export default function LessonPlanner() {
               value={goals}
               onChange={(e) => setGoals(e.target.value)}
               placeholder="e.g. practise past perfect, airport vocabulary…"
+              maxLength={300}
             />
           </div>
           <button
