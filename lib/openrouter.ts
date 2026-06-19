@@ -263,6 +263,81 @@ Rules:
 - warn and tip items must be actionable — tell the teacher exactly what to change`;
 }
 
+export function vocabularyPrompt({
+  level,
+  topic,
+  wordCount,
+  focusType,
+  includes,
+}: {
+  level: string;
+  topic: string;
+  wordCount: string;
+  focusType: string;
+  includes: string[];
+}): string {
+  const count = parseInt(wordCount);
+
+  const includesInstructions = [
+    includes.includes("Definitions") &&
+      "Definition: one clear, student-friendly definition",
+    includes.includes("Example sentences") &&
+      "Example: one natural example sentence using the word in context",
+    includes.includes("Collocations") &&
+      "Collocations: 2 to 3 common collocations (word combinations)",
+    includes.includes("Part of speech") &&
+      "Part of speech: noun, verb, adjective, adverb, etc.",
+    includes.includes("Pronunciation guide") &&
+      "Pronunciation: phonetic transcription using IPA",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return `You are an expert ESL materials writer with deep knowledge of CEFR-aligned vocabulary instruction. You create vocabulary lists that teachers can use immediately in class.
+
+STUDENT LEVEL: ${level}
+LEVEL GUIDANCE: ${levelGuide(level)}
+TOPIC: ${topic}
+VOCABULARY FOCUS: ${focusType}
+NUMBER OF WORDS: ${count}
+INFORMATION TO INCLUDE FOR EACH WORD: ${includes.join(", ")}
+
+CRITICAL FORMATTING RULE: Output plain text only. Never use asterisks (*), hashtags (#), backticks, underscores for emphasis, or any markdown syntax anywhere in your response. If you want to emphasise something, use CAPITAL LETTERS only. This rule applies to every section without exception.
+
+WORD SELECTION RULES:
+- Every word must be genuinely useful for the topic "${topic}" at ${level} level
+- Words must be strictly appropriate for the CEFR level described above — do not include words above or below this level
+- For "${focusType}" focus: select words that genuinely fit this category
+- Do not pad with obvious or overly simple filler words
+- No two words should be synonyms of each other unless contrast is the pedagogical point
+
+For each word entry, use this exact format — include only the sub-fields specified above:
+[NUMBER]. [WORD]
+${includesInstructions}
+
+Use this exact four-section structure with these exact headings:
+
+VOCABULARY LIST
+${count} numbered entries using the format above. Each entry is complete and specific. No placeholders.
+
+TEACHING NOTES
+Practical advice on how to present this vocabulary set in class. Include: the best order to introduce the words, any groupings or semantic fields the teacher should highlight, and one specific technique suited to this focus type (${focusType}). 3 to 5 sentences.
+
+PRACTICE IDEAS
+Exactly 3 quick classroom activities for practising this vocabulary set. Each activity must be named, take no longer than 10 minutes, and be immediately usable without any additional preparation. Write the activity name followed by a colon, then 2 to 3 sentences of instructions.
+
+EXTENSION WORDS
+Exactly 5 additional words on the same topic that advanced or fast-finishing students can explore. For each one write: the word, its part of speech in parentheses, and a one-line definition. Format as a numbered list.
+
+STRICT RULES:
+- Plain text only. No markdown, no asterisks, no bullet symbols.
+- Use the exact four section headings above.
+- Write all ${count} vocabulary entries in full — never truncate with "etc." or "[continued]".
+- Every example sentence must be original and natural. No template sentences.
+- Vocabulary, sentence complexity, and definitions must match ${level} level guidance precisely.
+- Do not add any introduction, preamble, or closing remarks outside the four sections.`;
+}
+
 export async function callOpenRouter({
   prompt,
   isPro,
