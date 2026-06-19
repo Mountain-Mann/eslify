@@ -1109,3 +1109,56 @@ textarea {
   background: var(--border);
   margin: 1rem 0 0.5rem;
 }
+
+/* ─────────────────────────────────────────────────────────
+   Error Corrector — error table + inline field validation
+───────────────────────────────────────────────────────── */
+
+.error-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 4px 0;
+}
+
+.error-table th,
+.error-table td {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.error-table th {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  background: var(--surface-2);
+}
+
+.error-table tr:nth-child(even) td {
+  background: var(--surface-2);
+}
+
+.error-table td:first-child {
+  width: 28px;
+  text-align: center;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.error-table td:nth-child(2) {
+  width: 90px;
+  font-weight: 600;
+  color: var(--amber);
+}
+
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--red, #c0392b);
+}
