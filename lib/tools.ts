@@ -1,7 +1,7 @@
 import { getAnonId } from "@/lib/anon";
 
 export async function generateContent(
-  tool: "lesson" | "worksheet" | "check" | "corrector",
+  tool: "lesson" | "worksheet" | "check" | "corrector" | "vocabulary",
   prompt: string
 ): Promise<{
   content: string;

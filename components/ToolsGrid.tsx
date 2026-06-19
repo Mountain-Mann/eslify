@@ -18,12 +18,12 @@ const TOOLS = [
     badge: "new" as const,
   },
   {
-    href: null,
+    href: "/vocabulary",
     icon: "📚",
     name: "Vocabulary Builder",
     desc: "Generate level-appropriate word lists with definitions, collocations and example sentences.",
-    active: false,
-    badge: "soon" as const,
+    active: true,
+    badge: "new" as const,
   },
   {
     href: "/corrector",

@@ -1,4 +1,4 @@
-export type ToolType = "lesson" | "worksheet" | "check" | "corrector";
+export type ToolType = "lesson" | "worksheet" | "check" | "corrector" | "vocabulary";
 
 export type SubscriptionStatus = "free" | "active" | "canceled" | "past_due";
 
@@ -12,6 +12,14 @@ export interface Profile {
   subscription_status: SubscriptionStatus;
   subscription_plan: SubscriptionPlan;
   created_at: string;
+}
+
+export interface VocabularyOptions {
+  level: string;
+  topic: string;
+  wordCount: string;
+  focusType: string;
+  includes: string[];
 }
 
 export interface UserState {

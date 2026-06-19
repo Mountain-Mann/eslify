@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!["lesson", "worksheet", "check", "corrector"].includes(tool)) {
+  if (!["lesson", "worksheet", "check", "corrector", "vocabulary"].includes(tool)) {
     return NextResponse.json({ error: "Invalid tool" }, { status: 400 });
   }
 
