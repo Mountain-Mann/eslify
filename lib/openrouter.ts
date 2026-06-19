@@ -157,6 +157,68 @@ process in the output. The self-check is for your own internal verification
 only and should never appear in the final text.`;
 }
 
+export function correctorPrompt({
+  level,
+  writingType,
+  errorFocus,
+  studentText,
+  notes,
+}: {
+  level: string;
+  writingType: string;
+  errorFocus: string;
+  studentText: string;
+  notes?: string;
+}): string {
+  const focusInstruction =
+    errorFocus === "All errors"
+      ? "Identify and correct all error types: grammar, vocabulary, spelling, punctuation, and register."
+      : `Focus specifically on ${errorFocus.toLowerCase()} errors. Note other error types only if they significantly impede meaning.`;
+
+  return `You are an experienced ESL teacher and writing coach with expertise in CEFR-aligned feedback. You give corrections that are clear, encouraging, and immediately actionable.
+
+STUDENT LEVEL: ${level}
+LEVEL GUIDANCE: ${levelGuide(level)}
+WRITING TYPE: ${writingType}
+ERROR FOCUS: ${focusInstruction}
+${notes ? `TEACHER NOTES: ${notes}` : ""}
+
+STUDENT WRITING TO CORRECT:
+${studentText}
+
+CRITICAL FORMATTING RULE: Output plain text only. Never use asterisks (*), hashtags (#), backticks, underscores for emphasis, or any markdown syntax anywhere in your response. If you want to emphasise something, use CAPITAL LETTERS only. This rule applies to every section without exception.
+
+Use this exact structure with these exact headings:
+
+CORRECTED VERSION
+Rewrite the full student text with all targeted errors silently corrected. Preserve the student's ideas, voice, and structure. Do not add new sentences or change meaning. Do not add any commentary inside this section.
+
+SUMMARY
+2 to 3 sentences. Describe the student's overall written proficiency, the most frequent error patterns found, and whether the writing achieves its communicative purpose. Be honest but constructive. Reference the ${level} level standard.
+
+ERROR TABLE
+List every correction made. One error per line. Use exactly this pipe-separated format with no header row:
+[sentence number] | [error type] | [original phrase] | [corrected phrase] | [plain-English explanation for the student]
+
+Error types to use: Grammar, Vocabulary, Spelling, Punctuation, Register, Word order, Missing word, Extra word.
+Sentence numbers must match the order of sentences in the original text. Number them 1, 2, 3 and so on.
+The explanation column must be written so a ${level} student can understand it. Keep explanations under 15 words.
+
+LANGUAGE STRENGTHS
+Exactly 2 or 3 bullet points (use a plain hyphen, not a dash or asterisk). Each must identify something specific and genuine that the student did well. Do not write generic praise. If the writing has fewer than 2 genuine strengths at ${level} level, note what the closest strengths are.
+
+TEACHER TIPS
+Exactly 2 or 3 numbered suggestions (write 1. 2. 3. not bullet points) for what the teacher should address next with this student based on the error patterns. Each tip must name a specific grammar point, vocabulary area, or writing skill, and suggest a concrete activity type or approach. Do not repeat the errors from the table — synthesise the patterns.
+
+STRICT RULES — follow all of these without exception:
+- Plain text only. No asterisks, hash symbols, markdown, or formatting characters of any kind.
+- Use the exact five section headings listed above, nothing else.
+- The ERROR TABLE must use the pipe format. Every row must have exactly 5 fields separated by 4 pipe characters.
+- Never write placeholder text like "[add example here]" — write the actual content.
+- Do not add any introduction, preamble, or closing remarks outside the five sections.
+- If the student text contains no errors in the specified focus area, write "No errors found in this focus area." in the ERROR TABLE section and still complete all other sections.`;
+}
+
 export function checkerPrompt(lessonText: string): string {
   return `You are a senior ESL teacher trainer and materials evaluator with experience assessing lessons for accredited language schools. You are rigorous, specific, and constructive.
 

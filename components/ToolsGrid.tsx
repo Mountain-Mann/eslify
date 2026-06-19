@@ -26,12 +26,12 @@ const TOOLS = [
     badge: "soon" as const,
   },
   {
-    href: null,
+    href: "/corrector",
     icon: "✍️",
     name: "Error Corrector",
     desc: "Paste student writing and get annotated corrections with clear teacher explanations.",
-    active: false,
-    badge: "soon" as const,
+    active: true,
+    badge: "new" as const,
   },
   {
     href: null,
