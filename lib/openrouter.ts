@@ -338,6 +338,85 @@ STRICT RULES:
 - Do not add any introduction, preamble, or closing remarks outside the four sections.`;
 }
 
+export function examPrepPrompt({
+  examType,
+  taskType,
+  level,
+  topic,
+  notes,
+}: {
+  examType: string;
+  taskType: string;
+  level: string;
+  topic: string;
+  notes?: string;
+}): string {
+  const isIELTS = examType === 'IELTS';
+
+  const taskInstructions: Record<string, string> = {
+    'Reading (True/False/NG)': `Write a reading passage of approximately 250–300 words on the topic. Then write exactly 8 True/False/Not Given questions. Each question must be a complete statement. Clearly label each question T, F, or NG in the ANSWER KEY. Include a brief explanation for each answer.`,
+    'Reading (Multiple Choice)': `Write a reading passage of approximately 250–300 words on the topic. Then write exactly 6 multiple-choice questions, each with options A, B, C, and D. Only one option is correct per question. Include the full passage and all questions under the TASK CONTENT heading. List answers with brief justifications in the ANSWER KEY.`,
+    'Listening (Gap Fill)': `Write a transcript of a short monologue or dialogue (approximately 200 words) on the topic. Then write a gap-fill summary with 8 blanks. The summary is a separate shorter text — not the transcript verbatim — and each blank must be fillable with one to three words from the transcript. Present the transcript first, then the gap-fill summary. List answers in the ANSWER KEY.`,
+    'Writing Task 1 (Academic)': `Write a realistic IELTS Academic Writing Task 1 prompt. Describe a chart, graph, diagram or process related to the topic. The prompt must specify exactly what visual data the student is responding to (e.g. "The bar chart shows…"). Write a model answer of approximately 160–180 words in the ANSWER KEY. The model answer must include an overview and must not express personal opinion.`,
+    'Writing Task 1 (General)': `Write a realistic IELTS General Training Writing Task 1 prompt asking the student to write a letter (formal, semi-formal, or informal) related to the topic. Include three bullet points of content the letter must address. Write a model answer of approximately 160–180 words in the ANSWER KEY. The model answer must match the appropriate register for the letter type.`,
+    'Writing Task 2 Essay': `Write a realistic IELTS Writing Task 2 essay prompt related to the topic. Use one of these standard question types: opinion (agree/disagree), discussion (both views + opinion), problem/solution, or advantage/disadvantage. Write a model answer of approximately 250–280 words in the ANSWER KEY. The model answer must have a clear introduction, developed body paragraphs, and a conclusion.`,
+    'Speaking Part 1': `Write 8 realistic IELTS Speaking Part 1 questions related to the topic. Questions should be personal, everyday, and answerable by anyone. Group them into 2 sets of 4 related questions. For each question, write a model answer of 2 to 3 sentences at ${level} level in the ANSWER KEY.`,
+    'Speaking Part 2': `Write a realistic IELTS Speaking Part 2 cue card on the topic. Include the main prompt and exactly 3 bullet points the student should cover. Write a model answer of approximately 150 words (1–2 minute speaking time) in the ANSWER KEY.`,
+    'Speaking Part 3': `Write 6 realistic IELTS Speaking Part 3 questions related to the topic. These must be abstract, analytical, and require extended opinion responses. Write a model answer of 3 to 5 sentences for each question in the ANSWER KEY.`,
+    'Reading (Multiple Choice)_TOEFL': `Write an academic reading passage of approximately 300 words on the topic. Then write 6 multiple-choice questions, each with options A, B, C, and D. Questions should test comprehension, inference, and vocabulary in context. List answers with brief justifications in the ANSWER KEY.`,
+    'Listening (Note-taking)': `Write a transcript of a short academic lecture or conversation (approximately 250 words) on the topic. Then write a note-taking template with 8 blanks the student fills in while listening. Present the transcript first, then the template. List answers in the ANSWER KEY.`,
+    'Integrated Writing': `Write a short academic reading passage (approximately 150 words) presenting one position on the topic. Then write a brief lecture prompt (3 to 4 sentences) that contradicts or complicates the reading. The student must summarize how the lecture relates to the reading. Write a model response of approximately 200 words in the ANSWER KEY.`,
+    'Independent Writing': `Write a realistic TOEFL Independent Writing prompt on the topic. The prompt must ask the student to support, challenge, or qualify a position or claim. Write a model response of approximately 250 words in the ANSWER KEY with a clear thesis, body paragraphs, and conclusion.`,
+    'Speaking (Independent)': `Write a realistic TOEFL Independent Speaking prompt on the topic. The student must state and support a preference or opinion. Write a model response of approximately 80 words (45-second speaking time) in the ANSWER KEY.`,
+    'Speaking (Integrated)': `Write a short reading passage (approximately 100 words) on the topic. Then write a listening prompt (3 to 4 sentences describing what a professor says that adds to or complicates the reading). The student must integrate both sources in their response. Write a model response of approximately 80 words in the ANSWER KEY.`,
+  };
+
+  const taskKey = isIELTS ? taskType : (taskType === 'Reading (Multiple Choice)' ? 'Reading (Multiple Choice)_TOEFL' : taskType);
+  const taskDetail = taskInstructions[taskKey] || `Write a realistic ${examType} ${taskType} task on the topic. Follow official ${examType} format guidelines exactly.`;
+
+  return `You are a senior ${examType} examiner and ESL materials writer with over 15 years of experience writing official-standard ${examType} practice materials used in accredited test preparation courses.
+
+EXAM: ${examType}
+TASK TYPE: ${taskType}
+STUDENT LEVEL: ${level}
+LEVEL GUIDANCE: ${levelGuide(level)}
+TOPIC: ${topic}
+${notes ? `ADDITIONAL INSTRUCTIONS: ${notes}` : ''}
+
+CRITICAL FORMATTING RULE: Output plain text only. Never use asterisks (*), hashtags (#), backticks, underscores for emphasis, or any markdown syntax anywhere in your response. If you want to emphasise something, use CAPITAL LETTERS only. This rule applies to every section without exception.
+
+TASK CONSTRUCTION INSTRUCTIONS:
+${taskDetail}
+
+Use this exact structure with these exact headings:
+
+TASK TITLE
+A specific, descriptive title for this practice task. Include the exam type, task type, and topic. Example: "IELTS Writing Task 2 — Technology and Society"
+
+EXAM OVERVIEW
+Two to three sentences explaining what this task type tests, how it is scored in the real ${examType}, and any key timing or length requirements a student must know. Write this as advice directly to the student.
+
+INSTRUCTIONS
+The exact student-facing instructions for this task, written as they would appear in the real ${examType} exam. Include any time limits, word counts, or format requirements. Write these in the second person (you, your).
+
+TASK CONTENT
+The full task content: the passage, prompt, cue card, transcript, questions, or whatever the task type requires. Write it completely — no placeholders. All questions must be numbered. All options must be labelled A, B, C, D if applicable.
+
+ANSWER KEY
+Complete answers for all questions. For writing or speaking tasks, include a full model answer. For multiple choice or gap fill, list the question number and correct answer with a one-line justification.
+
+TEACHER NOTES
+Three to four sentences of practical advice for the teacher. Include: the most common mistakes students make on this task type at ${level} level, one specific preparation strategy to share with students, and any marking or feedback tips.
+
+STRICT RULES — follow all without exception:
+- Plain text only. No asterisks, hash symbols, bullet symbols, or markdown of any kind.
+- Use the exact six section headings listed above.
+- All content must match official ${examType} format and difficulty standards.
+- Language complexity in passages and prompts must match ${level} level guidance.
+- Never write placeholder text. Write all content in full.
+- Do not add any introduction or closing remarks outside the six sections.`;
+}
+
 export async function callOpenRouter({
   prompt,
   isPro,
