@@ -34,12 +34,12 @@ const TOOLS = [
     badge: "new" as const,
   },
   {
-    href: null,
+    href: "/exam-prep",
     icon: "🎓",
     name: "Exam Prep Builder",
     desc: "Generate IELTS and TOEFL style tasks, mock questions and practice materials.",
-    active: false,
-    badge: "soon" as const,
+    active: true,
+    badge: "new" as const,
   },
   {
     href: null,
