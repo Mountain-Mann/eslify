@@ -86,8 +86,7 @@ export function generatePdf({
     doc.setFont(font, style);
     doc.setFontSize(size);
     doc.setTextColor(color[0], color[1], color[2]);
-    doc.setCharSpace(0);
-    doc.text(line, x, y, { align: 'left' });
+    doc.text(line, x, y);
   };
 
   // Wraps text and draws every resulting line individually.
@@ -101,7 +100,7 @@ export function generatePdf({
   ) => {
     doc.setFont("helvetica", style);
     doc.setFontSize(size);
-    const lines: string[] = doc.splitTextToSize(text, width);
+    const lines: string[] = doc.splitTextToSize(text, width - 8);
     for (const line of lines) {
       ensureSpace(LINE_HEIGHT + 2);
       drawLine(line, x, "helvetica", style, size, color);
