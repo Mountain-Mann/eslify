@@ -150,7 +150,7 @@ export default function ExamPrepBuilder() {
     generatePdf({
       title,
       subtitle: `${examType}  •  ${taskType}  •  ${levelShort}`,
-      sections,
+      sections: sections.map(s => ({ ...s, isAnswerKey: /answer key/i.test(s.heading) })),
       filename: `${title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`,
     });
   }
