@@ -19,12 +19,32 @@ const LESSON_TYPES = [
   "Vocabulary building",
 ];
 
+const LEVELS = [
+  "A1 — Beginner",
+  "A2 — Elementary",
+  "B1 — Intermediate",
+  "B2 — Upper Intermediate",
+  "C1 — Advanced",
+  "C2 — Proficiency",
+];
+
+const LEVEL_CODES = ["A1", "A2", "B1", "B2", "C1", "C2"];
+
 const LOADER_MSGS = [
   "Writing your lesson plan…",
   "Structuring activities…",
   "Adding timing and materials…",
   "Almost ready…",
 ];
+
+const SECTION_RX = /\n(?=[A-Z][A-Z\s&\-\/()]+\n)/g;
+
+interface LevelResult {
+  level: string;
+  title: string;
+  sections: { heading: string; content: string }[];
+  text: string;
+}
 
 export default function LessonPlanner() {
   const { user, refreshUser } = useUser();
@@ -36,6 +56,12 @@ export default function LessonPlanner() {
   const [duration, setDuration] = useState("45 minutes");
   const [classSize, setClassSize] = useState("Small group");
   const [goals, setGoals] = useState("");
+
+  // Differentiation mode
+  const [multiLevel, setMultiLevel] = useState(false);
+  const [selectedLevels, setSelectedLevels] = useState<string[]>(["B1 — Intermediate"]);
+  const [levelResults, setLevelResults] = useState<LevelResult[]>([]);
+  const [activeTab, setActiveTab] = useState(0);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +82,43 @@ export default function LessonPlanner() {
 
   const outOfCredits = user && !user.isPro && user.creditsRemaining <= 0;
 
+  function toggleMultiLevel() {
+    if (!user?.isPro) {
+      showUpgrade();
+      return;
+    }
+    setMultiLevel((v) => {
+      if (!v) {
+        setSelectedLevels([level]);
+      }
+      return !v;
+    });
+    setShowResult(false);
+    setLevelResults([]);
+  }
+
+  function toggleLevel(lvl: string) {
+    setSelectedLevels((prev) => {
+      if (prev.includes(lvl)) {
+        if (prev.length === 1) return prev; // keep at least one
+        return prev.filter((l) => l !== lvl);
+      }
+      if (prev.length >= 3) return prev; // max 3
+      return [...prev, lvl];
+    });
+  }
+
+  function parseSingleLesson(raw: string) {
+    const content = cleanMarkdown(raw);
+    const titleMatch = content.match(/LESSON TITLE\s*\n+(.+)/i);
+    const t = titleMatch
+      ? cleanMarkdown(titleMatch[1].trim())
+      : `${topic || "Lesson"} — ${type}`;
+    const body = content.replace(/LESSON TITLE\s*\n+.+\n?/i, "").trim();
+    const s = parseSections(body, SECTION_RX);
+    return { title: t, sections: s, text: content };
+  }
+
   async function handleGenerate() {
     if (outOfCredits) {
       showUpgrade();
@@ -67,7 +130,49 @@ export default function LessonPlanner() {
     setShowResult(false);
     setShowChecker(false);
     setCheckResult(null);
+    setLevelResults([]);
 
+    if (multiLevel && selectedLevels.length > 1) {
+      try {
+        const results = await Promise.all(
+          selectedLevels.map(async (lvl) => {
+            const prompt = lessonPrompt({
+              level: lvl,
+              type,
+              topic: topic || "general conversation",
+              duration,
+              classSize,
+              goals: goals || undefined,
+            });
+            const { content: raw } = await generateContent(
+              "lesson",
+              prompt,
+              `Lesson Plan — ${lvl.split("—")[0].trim()} — ${type}${topic ? ` — ${topic}` : ""}`
+            );
+            const { title: t, sections: s, text } = parseSingleLesson(raw);
+            return { level: lvl, title: t, sections: s, text };
+          })
+        );
+        setLevelResults(results);
+        setActiveTab(0);
+        setShowResult(true);
+        await refreshUser();
+      } catch (err) {
+        const e = err as Error & { status?: number; message?: string };
+        if (e.status === 402) {
+          showUpgrade();
+        } else if (e.status === 429) {
+          setError(e.message || "You've reached today's generation limit. It resets at midnight.");
+        } else {
+          setError("Something went wrong. Please try again.");
+        }
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Single level
     const prompt = lessonPrompt({
       level,
       type,
@@ -78,24 +183,15 @@ export default function LessonPlanner() {
     });
 
     try {
-      const { content: rawContent } = await generateContent(
+      const { content: raw } = await generateContent(
         "lesson",
         prompt,
         `Lesson Plan — ${level.split("—")[0].trim()} — ${type}${topic ? ` — ${topic}` : ""}`
       );
-      const content = cleanMarkdown(rawContent);
-      setLessonText(content);
-
-      const titleMatch = content.match(/LESSON TITLE\s*\n+(.+)/i);
-      setTitle(
-        titleMatch
-          ? cleanMarkdown(titleMatch[1].trim())
-          : `${topic || "Lesson"} — ${type}`
-      );
-
-      const body = content.replace(/LESSON TITLE\s*\n+.+\n?/i, "").trim();
-      const sectionRx = /\n(?=[A-Z][A-Z\s&\-\/()]+\n)/g;
-      setSections(parseSections(body, sectionRx));
+      const { title: t, sections: s, text } = parseSingleLesson(raw);
+      setLessonText(text);
+      setTitle(t);
+      setSections(s);
       setShowResult(true);
       setShowChecker(true);
       await refreshUser();
@@ -104,10 +200,7 @@ export default function LessonPlanner() {
       if (error.status === 402) {
         showUpgrade();
       } else if (error.status === 429) {
-        setError(
-          error.message ||
-            "You've reached today's generation limit. It resets at midnight."
-        );
+        setError(error.message || "You've reached today's generation limit. It resets at midnight.");
       } else {
         setError("Something went wrong. Please try again.");
       }
@@ -138,6 +231,11 @@ export default function LessonPlanner() {
     navigator.clipboard.writeText(lessonText);
   }
 
+  function copyTabText() {
+    const r = levelResults[activeTab];
+    if (r) navigator.clipboard.writeText(r.text);
+  }
+
   function downloadPdf() {
     if (!lessonText) return;
     generatePdf({
@@ -148,18 +246,32 @@ export default function LessonPlanner() {
     });
   }
 
-  // Called when the user clicks away from an edited section. Updates the
-  // section's content in state so both the on-screen view and the PDF
-  // export reflect the edit. We read from e.currentTarget rather than
-  // tracking onChange per keystroke to avoid fighting React's render
-  // cycle while contentEditable is focused.
-  function handleSectionEdit(
-    index: number,
-    e: React.FocusEvent<HTMLDivElement>
-  ) {
+  function downloadTabPdf() {
+    const r = levelResults[activeTab];
+    if (!r) return;
+    generatePdf({
+      title: r.title,
+      subtitle: `${r.level.split("—")[0].trim()}  •  ${type}  •  ${duration}`,
+      sections: r.sections,
+      filename: `${r.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`,
+    });
+  }
+
+  function handleSectionEdit(index: number, e: React.FocusEvent<HTMLDivElement>) {
     const newContent = e.currentTarget.innerText;
     setSections((prev) =>
       prev.map((s, i) => (i === index ? { ...s, content: newContent } : s))
+    );
+  }
+
+  function handleTabSectionEdit(index: number, e: React.FocusEvent<HTMLDivElement>) {
+    const newContent = e.currentTarget.innerText;
+    setLevelResults((prev) =>
+      prev.map((r, ri) =>
+        ri === activeTab
+          ? { ...r, sections: r.sections.map((s, si) => (si === index ? { ...s, content: newContent } : s)) }
+          : r
+      )
     );
   }
 
@@ -167,8 +279,16 @@ export default function LessonPlanner() {
     setTitle(e.currentTarget.innerText.trim());
   }
 
-  const scoreClass = (v: number) =>
-    v >= 80 ? "good" : v >= 60 ? "mid" : "bad";
+  function handleTabTitleEdit(e: React.FocusEvent<HTMLDivElement>) {
+    const newTitle = e.currentTarget.innerText.trim();
+    setLevelResults((prev) =>
+      prev.map((r, ri) => (ri === activeTab ? { ...r, title: newTitle } : r))
+    );
+  }
+
+  const scoreClass = (v: number) => v >= 80 ? "good" : v >= 60 ? "mid" : "bad";
+
+  const activeResult = levelResults[activeTab];
 
   return (
     <>
@@ -178,17 +298,54 @@ export default function LessonPlanner() {
       <div className="tool-page">
         <aside className="form-panel">
           <div className="form-title">📋 Lesson Planner</div>
-          <div className="field">
-            <label>Student level</label>
-            <select value={level} onChange={(e) => setLevel(e.target.value)}>
-              <option>A1 — Beginner</option>
-              <option>A2 — Elementary</option>
-              <option>B1 — Intermediate</option>
-              <option>B2 — Upper Intermediate</option>
-              <option>C1 — Advanced</option>
-              <option>C2 — Proficiency</option>
-            </select>
+
+          {!multiLevel ? (
+            <div className="field">
+              <label>Student level</label>
+              <select value={level} onChange={(e) => setLevel(e.target.value)}>
+                {LEVELS.map((l) => <option key={l}>{l}</option>)}
+              </select>
+            </div>
+          ) : (
+            <div className="field">
+              <label>Levels to generate <span className="field-note">(up to 3)</span></label>
+              <div className="level-chip-row">
+                {LEVELS.map((l, i) => {
+                  const code = LEVEL_CODES[i];
+                  const on = selectedLevels.includes(l);
+                  const maxed = selectedLevels.length >= 3 && !on;
+                  return (
+                    <button
+                      key={l}
+                      type="button"
+                      className={`level-chip${on ? " on" : ""}${maxed ? " disabled" : ""}`}
+                      onClick={() => !maxed && toggleLevel(l)}
+                      title={l}
+                    >
+                      {code}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="multilevel-toggle-row">
+            <button
+              type="button"
+              className={`multilevel-toggle${multiLevel ? " active" : ""}`}
+              onClick={toggleMultiLevel}
+            >
+              {multiLevel ? "✓ " : ""}Multi-level
+            </button>
+            <span className="multilevel-badge">Pro</span>
+            <span className="multilevel-hint">
+              {multiLevel
+                ? `Generates ${selectedLevels.length} version${selectedLevels.length !== 1 ? "s" : ""} in parallel`
+                : "Generate for multiple levels at once"}
+            </span>
           </div>
+
           <div className="field">
             <label>Lesson type</label>
             <TagRow tags={LESSON_TYPES} selected={type} onSelect={setType} />
@@ -206,10 +363,7 @@ export default function LessonPlanner() {
           <div className="field-row">
             <div className="field">
               <label>Duration</label>
-              <select
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-              >
+              <select value={duration} onChange={(e) => setDuration(e.target.value)}>
                 <option>30 minutes</option>
                 <option>45 minutes</option>
                 <option>60 minutes</option>
@@ -218,10 +372,7 @@ export default function LessonPlanner() {
             </div>
             <div className="field">
               <label>Class size</label>
-              <select
-                value={classSize}
-                onChange={(e) => setClassSize(e.target.value)}
-              >
+              <select value={classSize} onChange={(e) => setClassSize(e.target.value)}>
                 <option>1-to-1</option>
                 <option>Small group</option>
                 <option>Class (9–20)</option>
@@ -243,7 +394,9 @@ export default function LessonPlanner() {
             disabled={loading || !!outOfCredits}
             onClick={handleGenerate}
           >
-            Generate lesson plan
+            {multiLevel && selectedLevels.length > 1
+              ? `Generate for ${selectedLevels.length} levels`
+              : "Generate lesson plan"}
           </button>
           {outOfCredits && (
             <div className="credit-warning" style={{ display: "block" }}>
@@ -275,7 +428,75 @@ export default function LessonPlanner() {
               <p>{error}</p>
             </div>
           )}
-          {showResult && !loading && (
+
+          {/* Multi-level tabbed results */}
+          {showResult && !loading && multiLevel && levelResults.length > 1 && (
+            <>
+              <div className="level-tabs">
+                {levelResults.map((r, i) => (
+                  <button
+                    key={r.level}
+                    className={`level-tab${i === activeTab ? " active" : ""}`}
+                    onClick={() => setActiveTab(i)}
+                  >
+                    {r.level.split("—")[0].trim()}
+                  </button>
+                ))}
+              </div>
+              {activeResult && (
+                <div className="result-card">
+                  <div className="result-header">
+                    <div>
+                      <div
+                        className="result-title"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={handleTabTitleEdit}
+                      >
+                        {activeResult.title}
+                      </div>
+                      <div className="pill-row">
+                        <span className="pill pill-blue">
+                          {activeResult.level.split("—")[0].trim()}
+                        </span>
+                        <span className="pill pill-green">{type}</span>
+                        <span className="pill pill-amber">{duration}</span>
+                      </div>
+                    </div>
+                    <div className="result-actions">
+                      <button className="btn-sm" onClick={downloadTabPdf}>
+                        Download PDF
+                      </button>
+                      <button className="btn-sm" onClick={copyTabText}>
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                  <p className="edit-hint">Click any text below to edit it.</p>
+                  <div className="result-body">
+                    {activeResult.sections.map((s, i) =>
+                      s.content ? (
+                        <div key={`section-${i}`} className="section">
+                          <div className="section-label">{s.heading}</div>
+                          <div
+                            className="section-content"
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => handleTabSectionEdit(i, e)}
+                          >
+                            {s.content}
+                          </div>
+                        </div>
+                      ) : null
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Single level result */}
+          {showResult && !loading && (!multiLevel || levelResults.length <= 1) && (
             <div className="result-card" id="lesson-print-area">
               <div className="result-header">
                 <div>
@@ -325,7 +546,7 @@ export default function LessonPlanner() {
             </div>
           )}
 
-          {showChecker && showResult && (
+          {showChecker && showResult && !multiLevel && (
             <div className="checker">
               <div className="checker-head">
                 <h3>✦ Quality checker</h3>
@@ -335,11 +556,7 @@ export default function LessonPlanner() {
                     disabled={checking}
                     onClick={handleCheck}
                   >
-                    {checking
-                      ? "Checking…"
-                      : checkResult
-                        ? "Re-check"
-                        : "Check this lesson"}
+                    {checking ? "Checking…" : checkResult ? "Re-check" : "Check this lesson"}
                   </button>
                 ) : null}
               </div>
@@ -353,27 +570,11 @@ export default function LessonPlanner() {
                 </div>
               ) : checkResult ? (
                 <div className="checker-body" style={{ display: "block" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "baseline",
-                      gap: 8,
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "var(--font-syne), sans-serif",
-                        fontSize: 38,
-                        fontWeight: 800,
-                        color: "var(--ink)",
-                      }}
-                    >
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: "1rem" }}>
+                    <span style={{ fontFamily: "var(--font-syne), sans-serif", fontSize: 38, fontWeight: 800, color: "var(--ink)" }}>
                       {checkResult.overall}
                     </span>
-                    <span style={{ fontSize: 12, color: "var(--ink-3)" }}>
-                      overall score
-                    </span>
+                    <span style={{ fontSize: 12, color: "var(--ink-3)" }}>overall score</span>
                   </div>
                   <div className="scores">
                     {Object.entries(checkResult.scores).map(([k, v]) => (
@@ -383,31 +584,14 @@ export default function LessonPlanner() {
                       </div>
                     ))}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      color: "var(--amber)",
-                      marginBottom: 8,
-                      paddingBottom: 5,
-                      borderBottom: "1px solid var(--amber-border)",
-                    }}
-                  >
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber)", marginBottom: 8, paddingBottom: 5, borderBottom: "1px solid var(--amber-border)" }}>
                     Feedback
                   </div>
                   {checkResult.feedback.map((f, i) => {
-                    const icons: Record<string, string> = {
-                      ok: "✓",
-                      warn: "!",
-                      tip: "★",
-                    };
+                    const icons: Record<string, string> = { ok: "✓", warn: "!", tip: "★" };
                     return (
                       <div key={i} className="fb-item">
-                        <div className={`fb-dot ${f.type}`}>
-                          {icons[f.type]}
-                        </div>
+                        <div className={`fb-dot ${f.type}`}>{icons[f.type]}</div>
                         <div>{f.text}</div>
                       </div>
                     );
