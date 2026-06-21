@@ -1,4 +1,4 @@
-export type ToolType = "lesson" | "worksheet" | "check" | "corrector" | "vocabulary" | "exam";
+export type ToolType = "lesson" | "worksheet" | "check" | "corrector" | "vocabulary" | "exam" | "progress";
 
 export type SubscriptionStatus = "free" | "active" | "canceled" | "past_due";
 

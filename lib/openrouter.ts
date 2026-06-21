@@ -417,6 +417,61 @@ STRICT RULES — follow all without exception:
 - Do not add any introduction or closing remarks outside the six sections.`;
 }
 
+export function progressReportPrompt({
+  studentName,
+  level,
+  reportType,
+  reportTone,
+  teacherNotes,
+}: {
+  studentName?: string;
+  level: string;
+  reportType: string;
+  reportTone: string;
+  teacherNotes: string;
+}): string {
+  return `You are an experienced ESL teacher and education professional skilled at writing clear, constructive, and professional student progress reports for parents and schools.
+
+STUDENT LEVEL: ${level}
+LEVEL GUIDANCE: ${levelGuide(level)}
+REPORT TYPE: ${reportType}
+REPORT TONE: ${reportTone}
+${studentName ? `STUDENT NAME: ${studentName}` : ''}
+
+TEACHER NOTES AND OBSERVATIONS:
+${teacherNotes}
+
+CRITICAL FORMATTING RULE: Output plain text only. Never use asterisks (*), hashtags (#), backticks, underscores for emphasis, or any markdown syntax anywhere in your response. If you want to emphasise something, use CAPITAL LETTERS only. This rule applies to every section without exception.
+
+Use this exact structure with these exact headings:
+
+STUDENT OVERVIEW
+One or two sentences describing the student's current level and general learning context. If details are not in the notes, infer naturally from the level and context.
+
+LANGUAGE PROGRESS
+A paragraph (4 to 6 sentences) covering the student's overall progress across relevant skill areas mentioned in the notes. Be specific — reference actual improvements, recurring patterns, or milestones. Write in the ${reportTone.toLowerCase()} register appropriate for ${reportType.toLowerCase()} communication with parents or school administrators.
+
+STRENGTHS
+Three to five specific strengths drawn directly from the teacher's notes. Each strength should be a full sentence. Be concrete — name the skill, the behaviour, or the improvement, not a generic compliment.
+
+AREAS FOR DEVELOPMENT
+Two to four areas where the student needs to improve. Frame these constructively and honestly. For each area, include one brief, practical suggestion for how the student can address it.
+
+NEXT STEPS
+Two to three clear, actionable goals for the coming term or period. Each should be measurable and realistic for a ${level} student.
+
+CLOSING COMMENT
+One warm, professional closing sentence appropriate for ${reportTone.toLowerCase()} communication with parents or schools.
+
+STRICT RULES:
+- Plain text only. No asterisks, hash symbols, bullet symbols, or markdown of any kind.
+- Use the exact section headings listed above, nothing else.
+- Never write placeholder text like "[add example here]" — write the actual content.
+- All content must be drawn from or consistent with the teacher notes provided.
+- Vocabulary and expectations must reflect the ${level} CEFR level.
+- Do not add any introduction or closing remarks outside the defined sections.`;
+}
+
 export async function callOpenRouter({
   prompt,
   isPro,
