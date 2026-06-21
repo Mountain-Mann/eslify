@@ -101,28 +101,41 @@ export default function ToolsGrid() {
         })}
       </div>
       <section className="seo-intro">
-        <h2>AI lesson plans and worksheets for ESL teachers</h2>
+        <h2>AI tools for ESL and EFL teachers — lesson plans, worksheets, vocab, exam prep, and more</h2>
         <p>
-          ESLify is a free AI lesson plan generator built specifically for
-          ESL and EFL teachers. Create a complete, CEFR-aligned lesson plan
-          in seconds — just choose a level, topic, and lesson type, and get
-          a ready-to-teach plan with warm-up, presentation, practice, and
-          production activities included.
+          ESLify is a free suite of AI tools built specifically for ESL and EFL
+          teachers. The <strong>AI lesson plan generator</strong> creates
+          complete, CEFR-aligned plans in seconds — choose a level, topic, and
+          lesson type and get a ready-to-teach structure with warm-up,
+          presentation, practice, and production stages included. Every plan can
+          be scored by the built-in quality checker for structure,
+          level-appropriateness, and engagement before you walk into class.
         </p>
         <p>
-          Need printable materials instead? The worksheet generator creates
-          classroom-ready ESL worksheets with gap fills, multiple choice
-          questions, reading comprehension, and discussion prompts, complete
-          with an answer key and a one-click PDF download. Every lesson plan
-          can also be checked by our built-in AI quality checker, which
-          scores structure, level-appropriateness, and engagement before you
-          walk into class.
+          The <strong>ESL worksheet generator</strong> produces classroom-ready
+          printable worksheets with gap fills, multiple choice questions, reading
+          comprehension tasks, and discussion prompts — complete with an answer
+          key and one-click PDF export. The <strong>vocabulary builder</strong>{" "}
+          generates level-appropriate word lists with definitions, collocations,
+          and example sentences so students always have the right language for
+          the topic.
         </p>
         <p>
-          Whether you teach online, in a private language school, or run
-          your own tutoring business, ESLify saves hours of lesson
-          preparation time. Start with 10 free generations per month, no credit
-          card required.
+          Preparing students for high-stakes tests? The{" "}
+          <strong>exam prep builder</strong> generates IELTS and TOEFL-style
+          tasks, mock questions, and practice materials at the right level. The{" "}
+          <strong>AI error corrector</strong> lets you paste student writing and
+          get annotated corrections with clear teacher explanations — ideal for
+          homework feedback and writing classes. And when it&apos;s time to
+          report to parents or school management, the{" "}
+          <strong>progress report generator</strong> turns your rough notes into
+          polished, professional student progress reports in seconds.
+        </p>
+        <p>
+          Whether you teach online, in a private language school, or run your
+          own tutoring business, ESLify replaces hours of lesson preparation
+          with a few clicks. Start free with 10 generations per month — no
+          credit card required.
         </p>
       </section>
     </>

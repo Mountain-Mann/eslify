@@ -18,9 +18,9 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "ESLify — AI Tools for ESL Teachers",
+  title: "ESLify — AI Tools for ESL Teachers | Lesson Plans, Worksheets & More",
   description:
-    "Purpose-built AI tools for ESL teachers. Lesson plans, worksheets, and more.",
+    "Free AI tools for ESL and EFL teachers. Generate CEFR-aligned lesson plans, printable worksheets, vocabulary lists, IELTS & TOEFL exam prep, error corrections, and student progress reports in seconds.",
 };
 
 export default function RootLayout({
