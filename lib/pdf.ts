@@ -20,6 +20,8 @@ export function cleanMarkdown(text: string): string {
     .replace(/^>\s+/gm, "") // blockquote markers
     .replace(/_{2}(.+?)_{2}/g, "$1") // underscores used as bold
     .replace(/_(.+?)_/g, "$1") // underscores used as italic
+    .replace(/ /g, " ") // non-breaking space → regular space
+    .replace(/[–—]/g, "-") // en/em dash → hyphen
     .trim();
 }
 
@@ -86,7 +88,7 @@ export function generatePdf({
     doc.setFont(font, style);
     doc.setFontSize(size);
     doc.setTextColor(color[0], color[1], color[2]);
-    doc.text(line, x, y);
+    doc.text(line, x, y, { charSpace: 0 });
   };
 
   // Wraps text and draws every resulting line individually.
@@ -100,7 +102,7 @@ export function generatePdf({
   ) => {
     doc.setFont("helvetica", style);
     doc.setFontSize(size);
-    const lines: string[] = doc.splitTextToSize(text, width - 8);
+    const lines: string[] = doc.splitTextToSize(text, width - 20);
     for (const line of lines) {
       ensureSpace(LINE_HEIGHT + 2);
       drawLine(line, x, "helvetica", style, size, color);
