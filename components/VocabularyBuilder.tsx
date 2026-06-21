@@ -102,7 +102,11 @@ export default function VocabularyBuilder() {
     });
 
     try {
-      const { content: rawContent } = await generateContent("vocabulary", prompt);
+      const { content: rawContent } = await generateContent(
+        "vocabulary",
+        prompt,
+        `Vocabulary — ${level.split("—")[0].trim()} — ${topic.trim()}`
+      );
       const content = cleanMarkdown(rawContent);
       setVocabText(content);
 

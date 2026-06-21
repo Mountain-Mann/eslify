@@ -84,7 +84,11 @@ export default function ErrorCorrector() {
     });
 
     try {
-      const { content: rawContent } = await generateContent("corrector", prompt);
+      const { content: rawContent } = await generateContent(
+        "corrector",
+        prompt,
+        `Error Correction — ${level.split("—")[0].trim()} — ${writingType}`
+      );
       const content = cleanMarkdown(rawContent);
       setCorrectorText(content);
 

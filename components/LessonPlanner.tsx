@@ -78,7 +78,11 @@ export default function LessonPlanner() {
     });
 
     try {
-      const { content: rawContent } = await generateContent("lesson", prompt);
+      const { content: rawContent } = await generateContent(
+        "lesson",
+        prompt,
+        `Lesson Plan — ${level.split("—")[0].trim()} — ${type}${topic ? ` — ${topic}` : ""}`
+      );
       const content = cleanMarkdown(rawContent);
       setLessonText(content);
 

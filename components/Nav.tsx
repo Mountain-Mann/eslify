@@ -68,6 +68,11 @@ export default function Nav() {
         <Link href="/" className="btn-nav">
           Tools
         </Link>
+        {!loading && user && (
+          <Link href="/history" className="btn-nav">
+            History
+          </Link>
+        )}
         {!loading && !user && (
           <Link href="/login" className="btn-nav">
             Sign in

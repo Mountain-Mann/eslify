@@ -98,7 +98,11 @@ export default function ExamPrepBuilder() {
     });
 
     try {
-      const { content: rawContent } = await generateContent("exam", prompt);
+      const { content: rawContent } = await generateContent(
+        "exam",
+        prompt,
+        `${examType} — ${taskType} — ${level.split("—")[0].trim()}${topic ? ` — ${topic.trim()}` : ""}`
+      );
       const content = cleanMarkdown(rawContent);
       setExamText(content);
 
