@@ -50,12 +50,12 @@ const TOOLS = [
     badge: "soon" as const,
   },
   {
-    href: null,
+    href: "/progress-reports",
     icon: "📝",
     name: "Progress Reports",
     desc: "Turn your notes into professional student progress reports for parents and schools.",
-    active: false,
-    badge: "soon" as const,
+    active: true,
+    badge: "new" as const,
   },
 ];
 
