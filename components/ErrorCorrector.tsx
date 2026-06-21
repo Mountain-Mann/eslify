@@ -48,6 +48,8 @@ export default function ErrorCorrector() {
   const [studentText, setStudentText] = useState("");
   const [notes, setNotes] = useState("");
   const [inputError, setInputError] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +60,34 @@ export default function ErrorCorrector() {
 
   const loaderMsg = useRotatingMessage(LOADER_MSGS, loading ? 1800 : 999999);
   const outOfCredits = user && !user.isPro && user.creditsRemaining <= 0;
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileError(null);
+    setFileName(file.name);
+    if (inputError) setInputError(null);
+
+    try {
+      if (file.name.endsWith(".txt")) {
+        const text = await file.text();
+        setStudentText(text.slice(0, 2000));
+      } else if (file.name.endsWith(".docx")) {
+        const mammoth = await import("mammoth");
+        const buf = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer: buf });
+        setStudentText(result.value.slice(0, 2000));
+      } else {
+        setFileError("Only .txt and .docx files are supported.");
+        setFileName(null);
+      }
+    } catch {
+      setFileError("Could not read the file. Please try copy-pasting instead.");
+      setFileName(null);
+    }
+
+    e.target.value = "";
+  }
 
   async function handleGenerate() {
     if (!studentText.trim()) {
@@ -251,6 +281,22 @@ export default function ErrorCorrector() {
           </div>
           <div className="field">
             <label>Student writing</label>
+            <div className="upload-row">
+              <label htmlFor="file-upload" className="upload-btn">
+                Upload file
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                accept=".txt,.docx"
+                onChange={handleFile}
+                style={{ display: "none" }}
+              />
+              {fileName && (
+                <span className="upload-filename">{fileName}</span>
+              )}
+            </div>
+            {fileError && <span className="field-error">{fileError}</span>}
             <textarea
               value={studentText}
               onChange={(e) => {
