@@ -1,7 +1,8 @@
+import type { ToolType } from "@/lib/types";
 import { getAnonId } from "@/lib/anon";
 
 export async function generateContent(
-  tool: "lesson" | "worksheet" | "check" | "corrector" | "vocabulary" | "exam" | "progress",
+  tool: ToolType,
   prompt: string,
   title?: string
 ): Promise<{

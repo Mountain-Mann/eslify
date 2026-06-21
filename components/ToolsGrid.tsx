@@ -75,9 +75,6 @@ export default function ToolsGrid() {
           const className = `tool-card${tool.active ? " active-tool" : ""}${!tool.href ? " coming" : ""}`;
           const content = (
             <>
-              {tool.badge === "soon" && (
-                <div className="coming-badge">Soon</div>
-              )}
               {tool.badge === "new" && <div className="new-badge">New</div>}
               <div className="tool-icon">{tool.icon}</div>
               <div className="tool-name">{tool.name}</div>
