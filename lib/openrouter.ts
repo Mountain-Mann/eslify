@@ -472,6 +472,59 @@ STRICT RULES:
 - Do not add any introduction or closing remarks outside the defined sections.`;
 }
 
+export function syllabusPrompt({
+  level, numWeeks, hoursPerWeek, topic, goals
+}: {
+  level: string;
+  numWeeks: string;
+  hoursPerWeek: string;
+  topic: string;
+  goals?: string;
+}): string {
+  return `You are an expert ESL curriculum designer with 15 years of experience building accredited language courses. You design syllabuses that are realistic, coherent, and immediately usable by classroom teachers.
+
+STUDENT LEVEL: ${level}
+LEVEL GUIDANCE: ${levelGuide(level)}
+
+COURSE DETAILS:
+- Course topic / focus: ${topic}
+- Duration: ${numWeeks} weeks
+- Contact hours per week: ${hoursPerWeek}
+${goals ? `- Teacher goals: ${goals}` : ''}
+
+CRITICAL FORMATTING RULE: Output plain text only. Never use asterisks (*), hashtags (#), backticks, underscores, or any markdown syntax anywhere in your response. If you want to emphasise something, use CAPITAL LETTERS. This rule applies to every section without exception.
+
+Your task is to write a complete, week-by-week course syllabus. Each week must have a distinct theme that builds logically on previous weeks, with language goals that are appropriate and cumulative.
+
+Use this exact structure with these exact headings:
+
+COURSE TITLE
+A specific, descriptive title for this course. Not generic.
+
+COURSE OVERVIEW
+Two to three sentences describing the course arc, overall goals, and what students will be able to do by the end.
+
+${Array.from({ length: parseInt(numWeeks) || 8 }, (_, i) => `WEEK ${i + 1} — [Theme]
+Language Focus: The specific grammar structure, function, or vocabulary set for this week.
+Key Skills: The primary skill(s) practiced (reading, writing, listening, speaking).
+Activities: Two or three concrete, named classroom activities with brief descriptions.
+Homework: One realistic independent task.`).join('\n\n')}
+
+ASSESSMENT PLAN
+Two or three sentences describing how student progress will be measured across the course. Name specific assessment types (e.g. oral test, portfolio, written exam).
+
+RECOMMENDED RESOURCES
+Three to five specific, named resources (textbooks, websites, or material types) suitable for ${level} students studying ${topic}.
+
+STRICT RULES:
+- Plain text only. No asterisks, hash symbols, bullet symbols, or markdown of any kind.
+- Use the exact section headings listed above, including the "WEEK N — [Theme]" format where you replace [Theme] with the actual theme.
+- Every week must have all four sub-fields: Language Focus, Key Skills, Activities, Homework.
+- Topics must progress logically — each week builds on the previous.
+- All content must be specific and immediately usable, never vague or placeholder.
+- Vocabulary and expectations must reflect ${level} CEFR level throughout.`;
+}
+
 export async function callOpenRouter({
   prompt,
   isPro,

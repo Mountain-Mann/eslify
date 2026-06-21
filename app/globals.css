@@ -1163,6 +1163,130 @@ textarea {
   color: var(--red, #c0392b);
 }
 
+/* ── Differentiation Mode ── */
+.multilevel-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 12px;
+}
+
+.multilevel-toggle {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-2);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.multilevel-toggle:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.multilevel-toggle.active {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.multilevel-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 20px;
+  background: var(--ink);
+  color: white;
+  letter-spacing: 0.04em;
+}
+
+.multilevel-hint {
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.field-note {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+
+.level-chip-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.level-chip {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-2);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.level-chip:hover:not(.disabled) {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.level-chip.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.level-chip.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.level-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.level-tab {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 20px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  position: relative;
+  bottom: -1px;
+}
+
+.level-tab:hover {
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.level-tab.active {
+  background: var(--surface);
+  border-color: var(--border);
+  border-bottom-color: var(--surface);
+  color: var(--accent);
+}
+
 /* ── Generation History ── */
 .history-page {
   max-width: 1100px;

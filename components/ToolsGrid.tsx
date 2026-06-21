@@ -42,12 +42,12 @@ const TOOLS = [
     badge: "new" as const,
   },
   {
-    href: null,
+    href: "/syllabus",
     icon: "📅",
     name: "Syllabus Planner",
     desc: "Plan full courses across weeks. Set goals, sequence topics and track coverage.",
-    active: false,
-    badge: "soon" as const,
+    active: true,
+    badge: "new" as const,
   },
   {
     href: "/progress-reports",
