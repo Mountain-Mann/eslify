@@ -16,14 +16,14 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let body: { tool?: ToolType; prompt?: string; anonId?: string };
+  let body: { tool?: ToolType; prompt?: string; anonId?: string; title?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { tool, prompt, anonId } = body;
+  const { tool, prompt, anonId, title } = body;
 
   if (!tool || !prompt) {
     return NextResponse.json(
@@ -79,6 +79,8 @@ export async function POST(request: Request) {
         anon_id: anonId,
         tool,
         model: FREE_MODEL,
+        content,
+        name: title ?? null,
       });
 
       return NextResponse.json({
@@ -175,6 +177,8 @@ export async function POST(request: Request) {
       user_id: user.id,
       tool,
       model,
+      content,
+      name: title ?? null,
     });
 
     return NextResponse.json({

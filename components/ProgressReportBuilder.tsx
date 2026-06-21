@@ -73,7 +73,11 @@ export default function ProgressReportBuilder() {
     });
 
     try {
-      const { content: rawContent } = await generateContent("progress", prompt);
+      const { content: rawContent } = await generateContent(
+        "progress",
+        prompt,
+        `Progress Report — ${level.split("—")[0].trim()}${studentName.trim() ? ` — ${studentName.trim()}` : ""}`
+      );
       const content = cleanMarkdown(rawContent);
       setReportText(content);
 

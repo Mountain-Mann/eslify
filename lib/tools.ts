@@ -2,7 +2,8 @@ import { getAnonId } from "@/lib/anon";
 
 export async function generateContent(
   tool: "lesson" | "worksheet" | "check" | "corrector" | "vocabulary" | "exam" | "progress",
-  prompt: string
+  prompt: string,
+  title?: string
 ): Promise<{
   content: string;
   creditsRemaining: number;
@@ -13,7 +14,7 @@ export async function generateContent(
   const res = await fetch("/api/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ tool, prompt, anonId }),
+    body: JSON.stringify({ tool, prompt, anonId, title }),
   });
   const data = await res.json();
   if (!res.ok) {

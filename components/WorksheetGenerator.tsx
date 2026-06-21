@@ -67,7 +67,11 @@ export default function WorksheetGenerator() {
     });
 
     try {
-      const { content: rawContent } = await generateContent("worksheet", prompt);
+      const { content: rawContent } = await generateContent(
+        "worksheet",
+        prompt,
+        `Worksheet — ${level.split("—")[0].trim()} — ${focus}${topic ? ` — ${topic}` : ""}`
+      );
       const content = cleanMarkdown(rawContent);
       setWorksheetText(content);
 
