@@ -1,8 +1,6 @@
 // lib/pdf.ts
-// Markdown cleanup + real client-side PDF generation using jsPDF.
-// Run: npm install jspdf
-
-import jsPDF from "jspdf";
+// Markdown cleanup + browser-native print-to-PDF (no jsPDF).
+// The browser renders HTML directly — zero font-metric mismatch.
 
 /**
  * Strips common markdown artifacts that sometimes leak through from the
@@ -33,179 +31,156 @@ export interface PdfSection {
 
 interface GeneratePdfOptions {
   title: string;
-  subtitle?: string; // e.g. level / type / duration pills as one line
+  subtitle?: string;
   sections: PdfSection[];
-  studentInfoLine?: boolean; // adds Name/Date/Class line for worksheets
+  studentInfoLine?: boolean;
   filename: string;
 }
 
-const PAGE_WIDTH = 595.28; // A4 in pt
-const PAGE_HEIGHT = 841.89;
-const MARGIN = 56; // ~0.78in
-const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2;
-const LINE_HEIGHT = 14;
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 /**
- * Generates a clean, real PDF (not a page screenshot) from structured
- * lesson/worksheet sections. Answer key sections are forced onto a new
- * page automatically.
- *
- * IMPORTANT: every text draw call renders ONE line at a time (never an
- * array of lines passed to doc.text()) and re-asserts font/size/color
- * immediately before drawing. Passing wrapped-line arrays directly to
- * jsPDF's text() has been observed to occasionally corrupt glyph spacing
- * on some lines (rendering as letter-by-letter with stray characters
- * between each one) when font state changes earlier in the same
- * document. Rendering defensively, line by line, avoids that class of
- * bug entirely.
+ * Opens a print window containing the document as HTML and triggers the
+ * browser's native print-to-PDF dialog. The browser uses its own font
+ * rendering — no jsPDF metric tables, no font substitution mismatch.
  */
 export function generatePdf({
   title,
   subtitle,
   sections,
   studentInfoLine,
-  filename,
 }: GeneratePdfOptions): void {
-  const doc = new jsPDF({ unit: "pt", format: "a4" });
-  let y = MARGIN;
+  const sectionsHtml = sections
+    .map((s) => {
+      if (!s.heading && !s.content) return "";
 
-  const ensureSpace = (needed: number) => {
-    if (y + needed > PAGE_HEIGHT - MARGIN) {
-      doc.addPage();
-      y = MARGIN;
-    }
-  };
+      const pageBreak = s.isAnswerKey
+        ? ' style="page-break-before: always; padding-top: 8px;"'
+        : "";
 
-  // Draws a single already-measured line, re-asserting font state first.
-  const drawLine = (
-    line: string,
-    x: number,
-    font: "helvetica",
-    style: "normal" | "bold",
-    size: number,
-    color: [number, number, number]
-  ) => {
-    doc.setFont(font, style);
-    doc.setFontSize(size);
-    doc.setTextColor(color[0], color[1], color[2]);
-    doc.text(line, x, y, { charSpace: 0 });
-  };
+      let html = `<div class="section"${pageBreak}>`;
 
-  // Wraps text and draws every resulting line individually.
-  const drawWrapped = (
-    text: string,
-    x: number,
-    width: number,
-    style: "normal" | "bold",
-    size: number,
-    color: [number, number, number]
-  ) => {
-    doc.setFont("helvetica", style);
-    doc.setFontSize(size);
-    const lines: string[] = doc.splitTextToSize(text, width - 20);
-    for (const line of lines) {
-      ensureSpace(LINE_HEIGHT + 2);
-      drawLine(line, x, "helvetica", style, size, color);
-      y += LINE_HEIGHT;
-    }
-  };
+      if (s.heading) {
+        html += `<div class="section-heading">${escapeHtml(s.heading.toUpperCase())}</div>`;
+        html += `<hr class="section-rule" />`;
+      }
 
-  // Title
-  drawWrapped(title, MARGIN, CONTENT_WIDTH, "bold", 18, [20, 20, 20]);
-  y += 6;
-
-  // Subtitle (level / type / duration)
-  if (subtitle) {
-    drawWrapped(subtitle, MARGIN, CONTENT_WIDTH, "normal", 10, [110, 110, 110]);
-    y += 8;
-  }
-
-  // Student info line
-  if (studentInfoLine) {
-    ensureSpace(30);
-    drawLine(
-      "Name: _______________________   Date: _____________   Class: ___________",
-      MARGIN,
-      "helvetica",
-      "normal",
-      11,
-      [20, 20, 20]
-    );
-    y += 26;
-  }
-
-  // Divider
-  doc.setDrawColor(220, 220, 220);
-  doc.line(MARGIN, y, PAGE_WIDTH - MARGIN, y);
-  y += 20;
-
-  for (const section of sections) {
-    if (!section.heading && !section.content) continue;
-
-    // Force answer key onto a fresh page
-    if (section.isAnswerKey) {
-      doc.addPage();
-      y = MARGIN;
-    } else {
-      ensureSpace(40);
-    }
-
-    if (section.heading) {
-      ensureSpace(18);
-      drawLine(
-        section.heading.toUpperCase(),
-        MARGIN,
-        "helvetica",
-        "bold",
-        11,
-        [46, 93, 75] // brand-ish green, matches app accent
-      );
-      y += 8;
-      doc.setDrawColor(232, 242, 238);
-      doc.line(MARGIN, y, PAGE_WIDTH - MARGIN, y);
-      y += 14;
-    }
-
-    if (section.content) {
-      const cleaned = cleanMarkdown(section.content);
-      const paragraphs = cleaned.split("\n");
-
-      for (const rawPara of paragraphs) {
-        if (!rawPara.trim()) {
-          y += 8;
-          continue;
-        }
-
-        // Detect a leading indent (used for "a) b) c)" style sub-options
-        // that the model sometimes puts on an indented continuation line).
-        const indentMatch = rawPara.match(/^(\s{2,})/);
-        const indentPt = indentMatch ? 18 : 0;
-        const para = rawPara.trim();
-        const availWidth = CONTENT_WIDTH - indentPt;
-
-        // If a line contains multiple lettered options separated by
-        // multiple spaces (e.g. "a) menu   b) chair   c) floor"), force
-        // each option onto its own visual line.
-        const optionSplit = para.split(/(?<=\))\s{2,}(?=[a-d]\))/i);
-        const piecesToRender =
-          optionSplit.length > 1 ? optionSplit : [para];
-
-        for (const piece of piecesToRender) {
-          drawWrapped(
-            piece,
-            MARGIN + indentPt,
-            availWidth,
-            "normal",
-            11,
-            [20, 20, 20]
-          );
-          y += 2;
+      if (s.content) {
+        const paragraphs = s.content.split("\n");
+        for (const para of paragraphs) {
+          if (!para.trim()) {
+            html += `<div class="spacer"></div>`;
+          } else {
+            html += `<p>${escapeHtml(para.trim())}</p>`;
+          }
         }
       }
-    }
 
-    y += 14; // space between sections
+      html += `</div>`;
+      return html;
+    })
+    .join("");
+
+  const studentInfoHtml = studentInfoLine
+    ? `<div class="student-info">Name: _______________________&nbsp;&nbsp;&nbsp;Date: _____________&nbsp;&nbsp;&nbsp;Class: ___________</div>`
+    : "";
+
+  const subtitleHtml = subtitle
+    ? `<div class="subtitle">${escapeHtml(subtitle)}</div>`
+    : "";
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${escapeHtml(title)}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm;
   }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 11pt;
+    color: #141414;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  h1 {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #141414;
+  }
+  .subtitle {
+    font-size: 10pt;
+    color: #6e6e6e;
+    margin-bottom: 10px;
+  }
+  .student-info {
+    font-size: 11pt;
+    margin-bottom: 14px;
+  }
+  hr.main-rule {
+    border: none;
+    border-top: 1px solid #dcdcdc;
+    margin-bottom: 18px;
+  }
+  .section {
+    margin-bottom: 16px;
+  }
+  .section-heading {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #2e5d4b;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  hr.section-rule {
+    border: none;
+    border-top: 1px solid #e8f2ee;
+    margin-bottom: 10px;
+  }
+  p {
+    margin-bottom: 4px;
+  }
+  .spacer {
+    height: 8px;
+  }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<h1>${escapeHtml(title)}</h1>
+${subtitleHtml}
+${studentInfoHtml}
+<hr class="main-rule" />
+${sectionsHtml}
+<script>
+  window.onload = function() {
+    window.print();
+    window.onafterprint = function() { window.close(); };
+  };
+</script>
+</body>
+</html>`;
 
-  doc.save(filename);
+  const printWin = window.open("", "_blank");
+  if (!printWin) return;
+  printWin.document.write(html);
+  printWin.document.close();
 }
