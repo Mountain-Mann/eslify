@@ -14,7 +14,7 @@ const TOOLS = [
     icon: "📄",
     name: "Worksheet Generator",
     desc: "Create printable student worksheets with exercises, gap fills, discussion questions and more.",
-    active: false,
+    active: true,
     badge: "new" as const,
   },
   {
